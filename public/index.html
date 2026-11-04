@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trà Đá Phố Cổ 3D — một góc Hà Nội để ngồi</title>
+<meta name="description" content="Kéo ghế nhựa ngồi giữa phố cổ Hà Nội 3D: nhấp trà đá, cắn hạt hướng dương, ngắm tàu điện, xích lô, gánh hàng hoa, dạo tới Hồ Gươm và nghe nhạc phố cổ cùng người lạ.">
+<style>
+  :root{--ink:#2a2320;--paper:#f7f0e1;--paper2:#efe3c8;--lac:#9b2c24;--glass:rgba(250,244,231,.93);--line:rgba(42,35,32,.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#1a1512;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #c{touch-action:none;cursor:grab}
+  #c:active{cursor:grabbing}
+  #lbl{pointer-events:none;z-index:2}
+  button{font-family:inherit;color:inherit;cursor:pointer}
+  button:focus-visible,a:focus-visible,input:focus-visible,label:focus-within{outline:3px solid #e7b34a;outline-offset:2px}
+  .hud{position:fixed;inset:0;pointer-events:none;transition:opacity .7s;z-index:5}
+  .hud.hidden{opacity:0}
+  body.calm .hud .fade{opacity:0;pointer-events:none}
+  .fade{transition:opacity .7s}
+  .top{position:absolute;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .card{background:var(--glass);border-radius:16px;box-shadow:0 8px 28px rgba(20,12,6,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.5)}
+  .brand{pointer-events:auto;padding:10px 14px;max-width:46vw}
+  .brand h2{font-family:Georgia,"Times New Roman",serif;font-size:18px;font-weight:700}
+  .brand h2 span{color:var(--lac)}
+  .brand small{display:block;font-size:12.5px;margin-top:3px;opacity:.85}
+  .brand b{color:var(--lac)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .chip{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--paper2);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .chip.on{background:#d9ecd2}.chip.on::before{content:"● ";color:#3c8d4f}
+  .chip.np{background:#f6dfd0;border:0;pointer-events:auto}
+  .chip.np:empty{display:none}
+  .tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:54vw}
+  .tbtn{pointer-events:auto;border:0;background:var(--glass);font-size:13px;font-weight:600;padding:9px 12px;border-radius:12px;box-shadow:0 4px 16px rgba(20,12,6,.25)}
+  .tbtn.red{background:var(--lac);color:#fff}
+  .bottom{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 8px}
+  .stats{font-size:12.5px;font-weight:600;background:rgba(28,20,14,.62);color:#fbefd6;padding:6px 12px;border-radius:999px;pointer-events:auto}
+  .stats span{margin:0 5px;white-space:nowrap}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .act{pointer-events:auto;border:0;background:var(--glass);border-radius:16px;padding:9px 14px;min-width:94px;font-size:14px;font-weight:700;line-height:1.15;box-shadow:0 6px 20px rgba(20,12,6,.28);transition:transform .12s}
+  .act:active,.tbtn:active{transform:scale(.95)}
+  .act kbd{display:block;font:inherit;font-size:11px;font-weight:600;opacity:.5;margin-bottom:3px}
+  .act.on{background:#f3d79a}
+  .hint{font-size:13px;color:#fff;background:rgba(28,20,14,.62);padding:7px 14px;border-radius:999px;transition:opacity .5s;text-align:center}
+  .toast{position:fixed;left:50%;top:17%;transform:translateX(-50%);width:max-content;max-width:min(88vw,560px);text-align:center;color:#fff;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:18px;line-height:1.4;text-shadow:0 2px 14px rgba(0,0,0,.85);opacity:0;transition:opacity 1s;pointer-events:none;z-index:6}
+  .toast.show{opacity:1}
+  .info{position:fixed;left:50%;bottom:150px;transform:translate(-50%,16px);width:min(92vw,420px);padding:14px 16px;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;z-index:7}
+  .info.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  .info .k{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--lac)}
+  .info h3{font-family:Georgia,"Times New Roman",serif;font-size:21px;margin:3px 0 6px}
+  .info p{font-size:14px;line-height:1.5}
+  .x{position:absolute;top:8px;right:8px;border:0;background:transparent;font-size:20px;line-height:1;padding:6px 9px;border-radius:10px}
+  .x:hover{background:var(--paper2)}
+  .panelR{position:fixed;right:10px;top:max(64px,calc(env(safe-area-inset-top) + 64px));width:min(94vw,400px);max-height:calc(100vh - 90px);overflow:auto;padding:16px;z-index:8;transform:translateY(-8px);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+  .panelR.show{opacity:1;transform:none;pointer-events:auto}
+  .panelR h3{font-family:Georgia,"Times New Roman",serif;font-size:20px;padding-right:30px}
+  .panelR h4{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--lac);margin:16px 0 6px}
+  .sub{font-size:12.5px;line-height:1.45;opacity:.8;margin-bottom:6px}
+  .trkrow{display:flex;align-items:center;gap:4px}
+  .trk{display:flex;align-items:center;gap:10px;width:100%;background:#fff8ea;border-radius:12px;padding:9px 10px;margin-top:6px;text-align:left;border:1px solid var(--line)}
+  .trk:hover{background:#fff1d6}
+  .trk.playing{background:#f6dfd0;border-color:#d9a58c}
+  .trk .ic{flex:0 0 30px;height:30px;border-radius:50%;background:var(--lac);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+  .trk .tt{flex:1;min-width:0}
+  .trk .tt b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trk .tt small{display:block;font-size:12px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .song{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .song span{flex:1;min-width:0}.song small{opacity:.7}
+  .song a{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--lac);text-decoration:none;border:1px solid #d9a58c;border-radius:999px;padding:4px 9px}
+  .row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .row input[type=url]{flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13px;background:#fff}
+  .btn{border:0;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;background:var(--paper2)}
+  .btn.red{background:var(--lac);color:#fff}
+  .filebtn{display:inline-flex;align-items:center;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;background:var(--lac);color:#fff;cursor:pointer;position:relative}
+  .filebtn input{position:absolute;opacity:0;width:1px;height:1px}
+  .del{border:0;background:transparent;font-size:16px;padding:4px 8px;border-radius:8px;opacity:.6}
+  .del:hover{opacity:1;background:var(--paper2)}
+  .vol{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;font-size:13px;margin-top:6px}
+  .vol input{width:100%;accent-color:var(--lac)}
+  .ctrl{display:flex;gap:6px;margin-top:10px}.ctrl .btn{flex:1}
+  .empty{font-size:12.5px;opacity:.65;font-style:italic;padding:6px 0}
+  .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;transition:opacity .7s;background:radial-gradient(ellipse at 50% 35%,rgba(40,26,16,.4),rgba(16,10,6,.8))}
+  .overlay.gone,.loading.gone{opacity:0;pointer-events:none}
+  .panel{background:var(--paper);border-radius:22px;max-width:600px;width:100%;padding:26px 22px;max-height:92vh;overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--lac)}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(32px,8vw,48px);line-height:1.02;margin:6px 0 12px}
+  h1 em{font-style:italic;color:var(--lac)}
+  .lead{font-size:15.5px;line-height:1.6}
+  .namebox{margin:16px 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--paper2);border-radius:14px;padding:11px 13px;font-size:14px}
+  .namebox strong{font-family:Georgia,"Times New Roman",serif;font-size:19px;color:var(--lac)}
+  .ghost{border:1.5px solid var(--lac);background:transparent;color:var(--lac);font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:10px}
+  .big{width:100%;margin-top:12px;padding:15px;font-size:16.5px;font-weight:800;border-radius:14px;border:0}
+  .big.red{background:var(--lac);color:#fff;box-shadow:0 8px 22px rgba(155,44,36,.35)}
+  .big.plain{background:#fff8ea;border:1.5px solid var(--line)}
+  .big[disabled]{opacity:.5;cursor:not-allowed}
+  .note{font-size:12px;margin-top:6px;line-height:1.45;opacity:.8}
+  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px}
+  th,td{text-align:left;padding:7px 5px;border-bottom:1px solid #e3d3b2;vertical-align:top}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;opacity:.7}
+  .fine{font-size:12.5px;margin-top:12px;line-height:1.55;opacity:.75}
+  .faq h3{font-family:Georgia,"Times New Roman",serif;font-size:16px;margin:14px 0 4px;color:var(--lac)}
+  .faq p{font-size:14px;line-height:1.55}
+  .loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#f6e7c8;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:18px;background:#1a1512;z-index:11;transition:opacity .7s;padding:24px;text-align:center}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(246,231,200,.25);border-top-color:#f6e7c8;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .stampGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  .stamp{--c:#9b2c24;aspect-ratio:1;border-radius:50%;border:3px double var(--c);color:var(--c);background:rgba(255,255,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;transform:rotate(-8deg);font-family:Georgia,"Times New Roman",serif;line-height:1.1}
+  .stamp:nth-child(even){transform:rotate(7deg)}
+  .stamp b{font-size:11.5px;margin:3px 0}
+  .stamp small{font-size:8.5px;font-family:system-ui,sans-serif;letter-spacing:.3px;opacity:.85}
+  .stamp.no{border-style:dashed;color:#9a8f80;border-color:#bcb2a2;background:transparent;opacity:.75}
+  .stamp.bonus{box-shadow:0 0 0 2px rgba(29,107,90,.2)}
+  .stamp.big{width:210px;border-width:6px;background:rgba(255,250,238,.92)}
+  .stamp.big b{font-size:24px;margin:6px 0}.stamp.big small{font-size:13px}
+  .pbar{height:8px;border-radius:99px;background:var(--paper2);overflow:hidden;margin-top:6px}.pbar i{display:block;height:100%;width:0;background:var(--lac);transition:width .6s}
+  .story{margin-top:14px;background:#fff8ea;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .story .k{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--lac)}
+  .story h5{font-family:Georgia,serif;font-size:18px;margin:2px 0 6px}.story p{font-size:14px;line-height:1.55}
+  #stampFx{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0}
+  #stampFx p{font-family:Georgia,serif;font-style:italic;color:#fff;font-size:19px;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+  #stampFx.show{animation:thump 2.6s ease forwards}
+  @keyframes thump{0%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(.94)}18%{transform:translate(-50%,-50%) scale(1.03)}24%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+  .notice{position:fixed;left:50%;bottom:150px;transform:translate(-50%,16px);width:min(94vw,460px);padding:16px;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;z-index:8;border-left:6px solid #1f4e9c}
+  .notice.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  .notice .k{font-size:11px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:#1f4e9c}
+  .notice h3{font-family:Georgia,serif;font-size:19px;margin:3px 0 6px}.notice p{font-size:14px;line-height:1.5}
+  .notice .row .btn{flex:1}
+  @media (max-width:600px){.stampGrid{grid-template-columns:repeat(3,1fr)}.notice{bottom:140px}
+    .act{min-width:72px;padding:8px 9px;font-size:12.5px}
+    .brand h2{font-size:15px}.brand{max-width:44vw;padding:8px 11px}
+    .tbtn{font-size:11.5px;padding:7px 8px}
+    .panelR{left:3vw;right:3vw;width:auto;top:auto;bottom:max(10px,env(safe-area-inset-bottom));max-height:72vh}
+    .info{bottom:140px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Phố cổ Hà Nội 3D với quán trà đá vỉa hè"></canvas>
+<canvas id="lbl" aria-hidden="true"></canvas>
+
+<div class="hud hidden" id="hud">
+  <div class="top">
+    <div class="card brand fade">
+      <h2>Trà Đá <span>Phố Cổ</span> 3D</h2>
+      <small>Bạn là <b id="myName">…</b></small>
+      <div class="chips"><span class="chip" id="mode">Một mình</span><button type="button" class="chip np" id="np" aria-live="polite"></button></div>
+    </div>
+    <div class="tools fade">
+      <button class="tbtn red" id="bMusic" type="button" aria-expanded="false" aria-controls="radio">♫ Nhạc</button>
+      <button class="tbtn red" id="bPass" type="button" aria-expanded="false" aria-controls="passport">Hộ chiếu 0/7</button>
+      <button class="tbtn" id="bPlaces" type="button" aria-expanded="false" aria-controls="places">Dạo phố ▾</button>
+      <button class="tbtn" id="bSound" type="button" aria-pressed="true">Tiếng phố: Bật</button>
+      <button class="tbtn" id="bWeather" type="button">Trời: Hanh</button>
+      <button class="tbtn" id="bTime" type="button">Giờ: Thật</button>
+      <button class="tbtn" id="bQ" type="button">Đồ hoạ: Cao</button>
+      <button class="tbtn" id="bHelp" type="button" aria-label="Hướng dẫn">?</button>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="hint fade" id="hint">Chạm ghế nhựa để ngồi · chạm mặt đường để đi</div>
+    <div class="stats fade" aria-live="polite"><span id="sCups">Cốc trà: 0</span><span id="sSeeds">Hạt: 0</span><span id="sNods">Gật đầu: 0</span><span id="sTime">Đã ngồi: 0:00</span></div>
+    <div class="bar">
+      <button class="act fade" id="a1" type="button"><kbd>1</kbd>Nhấp trà</button>
+      <button class="act fade" id="a2" type="button"><kbd>2</kbd>Cắn hạt</button>
+      <button class="act fade" id="a3" type="button"><kbd>3</kbd>Gật đầu</button>
+      <button class="act" id="a4" type="button"><kbd>4</kbd>Ngắm phố</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite"></div>
+<div class="card info" id="info" role="dialog" aria-labelledby="infoTitle">
+  <button class="x" id="infoClose" type="button" aria-label="Đóng">×</button>
+  <div class="k" id="infoStreet"></div><h3 id="infoTitle"></h3><p id="infoText"></p>
+</div>
+
+<div class="card panelR" id="places" role="dialog" aria-labelledby="placesTitle">
+  <button class="x" id="placesClose" type="button" aria-label="Đóng">×</button>
+  <h3 id="placesTitle">Dạo phố</h3>
+  <p class="sub">Chọn nơi muốn tới, nhân vật sẽ tự rảo bước tới đó. Con phố gom các địa danh về gần nhau cho vui, không đúng vị trí thật.</p>
+  <div id="placeList"></div>
+</div>
+
+<div class="card panelR" id="passport" role="dialog" aria-labelledby="passTitle">
+  <button class="x" id="passClose" type="button" aria-label="Đóng">×</button>
+  <h3 id="passTitle">Hộ chiếu phố cổ</h3>
+  <p class="sub" id="pProg" aria-live="polite"></p>
+  <div class="pbar"><i id="pBar"></i></div>
+  <div class="stampGrid" id="stampGrid"></div>
+  <div class="story" id="stampStory" hidden><div class="k" id="ssK"></div><h5 id="ssT"></h5><p id="ssD"></p></div>
+  <p class="sub" style="margin-top:12px">Câu chuyện được tóm lược từ các tư liệu và truyền thuyết phổ biến về phố cổ.</p>
+  <div class="ctrl"><button class="btn" id="pReset" type="button">Làm lại</button><button class="btn red" id="pCert" type="button" disabled>Tải giấy chứng nhận</button></div>
+</div>
+
+<div class="card notice" id="notice" role="alertdialog" aria-labelledby="noticeTitle">
+  <div class="k">Công an phường · Dân phòng</div>
+  <h3 id="noticeTitle">Nhắc nhở trật tự vỉa hè</h3>
+  <p id="noticeText"></p>
+  <div class="row"><button class="btn red" id="nYes" type="button">Kê ghế gọn lại</button><button class="btn" id="nLater" type="button">Để cô bán hàng làm</button></div>
+</div>
+<div id="stampFx" aria-hidden="true"></div>
+
+<div class="card panelR" id="radio" role="dialog" aria-labelledby="radioTitle">
+  <button class="x" id="radioClose" type="button" aria-label="Đóng đài">×</button>
+  <h3 id="radioTitle">Đài phố cổ</h3>
+  <h4>Nhạc nền phố cổ</h4>
+  <p class="sub">Ba bản nhạc không lời Copilot soạn riêng cho game, chơi bằng tiếng sáo trúc, đàn tranh, đàn bầu mô phỏng. Bấm là nghe ngay.</p>
+  <div id="synthList"></div>
+  <h4>Ca khúc Hà Nội xưa</h4>
+  <p class="sub">Các bài này vẫn còn bản quyền nên game không kèm sẵn bản thu. Bạn có thể nghe ở kênh chính thức, hoặc thêm bản nhạc mình đã mua hay được phép dùng vào danh sách bên dưới.</p>
+  <div id="songList"></div>
+  <h4>Danh sách của bạn</h4>
+  <div id="userList"></div>
+  <div class="row"><label class="filebtn">＋ Thêm bài từ máy<input type="file" id="fileIn" accept="audio/*,.mp3,.m4a,.ogg,.wav" multiple></label></div>
+  <form class="row" id="urlForm"><input type="url" id="urlIn" placeholder="Dán link file nhạc (https://…/bai-hat.mp3)" aria-label="Link file nhạc"><button class="btn" type="submit">Thêm</button></form>
+  <p class="sub" id="radioMsg" aria-live="polite" style="margin-top:6px"></p>
+  <h4>Âm lượng</h4>
+  <div class="vol"><label for="volMusic">Nhạc</label><input type="range" id="volMusic" min="0" max="100" value="70"><label for="volCity">Tiếng phố</label><input type="range" id="volCity" min="0" max="100" value="80"></div>
+  <div class="ctrl"><button class="btn" id="mStop" type="button">■ Dừng nhạc</button><button class="btn red" id="mNext" type="button">Bài tiếp ▶</button></div>
+</div>
+
+<div class="loading" id="bootLoad"><div class="spin"></div><span>Đang dựng phố cổ…</span></div>
+<div class="loading gone" id="loading"><div class="spin"></div><span id="loadText">Cô bán hàng đang lau ghế…</span></div>
+
+<div class="overlay" id="intro">
+  <div class="panel">
+    <div class="eyebrow">Hà Nội · Phố cổ · 3D</div>
+    <h1>Trà Đá <em>Phố Cổ</em></h1>
+    <p class="lead">Kéo một chiếc ghế nhựa dưới gốc sấu, nhấp ngụm trà đá, cắn vài hạt hướng dương. Xe máy, xích lô, tàu điện leng keng chạy qua. Đầu phố là Ô Quan Chưởng, cuối phố là Hồ Gươm. Mang theo “Hộ chiếu phố cổ”, ghé đủ 7 địa danh để nhận dấu. Không ai hỏi bạn làm nghề gì. Cũng chẳng có khung chat nào.</p>
+    <div class="namebox">Hôm nay bạn là <strong id="introName">…</strong><button class="ghost" id="reroll" type="button">Đổi tên</button></div>
+    <button class="big red" id="startOnline" type="button">Ngồi cùng người thật</button>
+    <p class="note" id="onlineNote"></p>
+    <button class="big plain" id="startSolo" type="button">Ngồi một mình</button>
+    <table>
+      <tr><th>Muốn làm gì</th><th>Máy tính</th><th>Điện thoại</th></tr>
+      <tr><td>Ngồi xuống</td><td>Bấm vào ghế nhựa</td><td>Chạm vào ghế</td></tr>
+      <tr><td>Đi lại</td><td>W A S D (giữ Shift để rảo bước) hoặc bấm mặt đường</td><td>Chạm mặt đường</td></tr>
+      <tr><td>Xoay · thu phóng</td><td>Kéo chuột · lăn chuột · ← →</td><td>Vuốt · chụm hai ngón</td></tr>
+      <tr><td>Nhấp trà · cắn hạt · gật đầu</td><td>Phím 1 · 2 · 3</td><td>Nút dưới màn hình</td></tr>
+      <tr><td>Xem địa danh</td><td>Bấm vào toà nhà</td><td>Chạm vào toà nhà</td></tr>
+      <tr><td>Đài nhạc · Dạo phố · Hộ chiếu</td><td>Phím M · G · P</td><td>Nút trên cùng</td></tr>
+    </table>
+    <p class="fine">Cần trình duyệt hỗ trợ WebGL2 (Chrome, Edge, Firefox, Safari 15+). Máy yếu có thể chọn “Đồ hoạ: Nhẹ”. Người thật có dấu ● cạnh tên; khi quán vắng, vài khách vãng lai mô phỏng sẽ ngồi cho đỡ trống và nhường ghế khi người thật cần.</p>
+  </div>
+</div>
+
+<div class="overlay gone" id="guide" role="dialog" aria-modal="true" aria-labelledby="gTitle">
+  <div class="panel faq">
+    <div class="eyebrow">Hướng dẫn</div>
+    <h1 id="gTitle" style="font-size:30px">Ngồi sao cho đúng điệu?</h1>
+    <h3>Ai là người thật?</h3><p>Tên có dấu ● và vòng sáng xanh dưới chân là người đang online thật.</p>
+    <h3>Dạo phố thế nào?</h3><p>Dùng W A S D, chạm mặt đường hoặc mở “Dạo phố” để rảo bước tới Ô Quan Chưởng, Chợ Hàng Bè, Phở Bát Đàn, Cà phê Giảng, Chả cá Lã Vọng, Kem Tràng Tiền và Hồ Gươm.</p>
+    <h3>Hộ chiếu phố cổ là gì?</h3><p>Đứng gần mỗi địa danh một chút để được đóng dấu và mở một câu chuyện ngắn. Đủ 7 dấu sẽ tải được giấy chứng nhận “người phố cổ”. Dấu lưu ngay trên máy bạn.</p>
+    <h3>Vì sao có công an phường, dân phòng?</h3><p>Hai người đi tuần dọc phố. Khi quán trà đá có từ 10 khách trở lên, họ sẽ tới nhắc kê ghế gọn, chừa lối đi cho người đi bộ. Bạn bấm “Kê ghế gọn lại” để nhận dấu thưởng “Nếp sống văn minh”.</p>
+    <h3>Nghe âm thanh 3D thế nào?</h3><p>Nên đeo tai nghe. Còi xe, chuông tàu điện, tiếng rao, tiếng chim ở hồ to dần khi lại gần và nghe rõ trái hay phải.</p>
+    <h3>Xe có đâm mình không?</h3><p>Không. Xe máy thấy bạn đứng giữa đường sẽ chậm lại và bóp còi.</p>
+    <h3>Máy chạy chậm?</h3><p>Bấm “Đồ hoạ: Nhẹ” để tắt bóng đổ và giảm độ phân giải.</p>
+    <h3>Quán đầy thì sao?</h3><p>Mỗi quán có 15 ghế. Hết ghế, bạn sẽ được dẫn sang quán bên cạnh (Quán số 2, 3…).</p>
+    <button class="big red" id="closeGuide" type="button">Ngồi tiếp</button>
+  </div>
+</div>
+
+<script src="js/gl.js"></script>
+<script src="js/world.js"></script>
+<script src="js/actors.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/passport.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
