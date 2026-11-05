@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trà Đá Phố Cổ — một góc Hà Nội để ngồi</title>
+<meta name="description" content="Kéo ghế nhựa ngồi giữa phố cổ Hà Nội 3D: nhấp trà đá, mời trà người lạ, đánh cờ tướng vỉa hè, dạo từ cầu Long Biên tới Hồ Gươm và gửi bưu thiếp cho bạn bè.">
+<meta name="theme-color" content="#9b2c24">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Trà Đá Phố Cổ — ngồi chút đã">
+<meta property="og:description" content="Quán trà đá vỉa hè giữa phố cổ Hà Nội 3D. Mời trà, cụng ly, đánh cờ tướng, sưu tầm 10 dấu hộ chiếu phố cổ.">
+<meta property="og:image" content="og-image.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{--ink:#2a2320;--paper:#f7f0e1;--paper2:#efe3c8;--lac:#9b2c24;--glass:rgba(250,244,231,.93);--line:rgba(42,35,32,.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#1a1512;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+  canvas.full{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #c{touch-action:none;cursor:grab}#c:active{cursor:grabbing}#lbl{pointer-events:none;z-index:2}
+  button,select,input{font-family:inherit;color:inherit}button,select{cursor:pointer}
+  button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e7b34a;outline-offset:2px}
+  .hud{position:fixed;inset:0;pointer-events:none;transition:opacity .7s;z-index:5}.hud.hidden{opacity:0}
+  body.calm .hud .fade,body.shooting .hud,body.shooting #lbl{opacity:0;pointer-events:none}.fade{transition:opacity .7s}
+  .top{position:absolute;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .card{background:var(--glass);border-radius:16px;box-shadow:0 8px 28px rgba(20,12,6,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.5)}
+  .brand{pointer-events:auto;padding:10px 14px;max-width:48vw}
+  .brand h2{font-family:Georgia,"Times New Roman",serif;font-size:18px}.brand h2 span{color:var(--lac)}
+  .brand small{display:block;font-size:12.5px;margin-top:3px;opacity:.85}.brand b{color:var(--lac);word-break:break-word}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .chip{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--paper2);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;border:0}
+  .chip.on{background:#d9ecd2}.chip.on::before{content:"● ";color:#3c8d4f}.chip.np{background:#f6dfd0;pointer-events:auto}.chip:empty{display:none}
+  .tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:50vw}
+  .tbtn{pointer-events:auto;border:0;background:var(--glass);font-size:13px;font-weight:600;padding:9px 12px;border-radius:12px;box-shadow:0 4px 16px rgba(20,12,6,.25)}
+  .tbtn.red{background:var(--lac);color:#fff}
+  .bottom{position:absolute;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 8px}
+  .stats{font-size:12.5px;font-weight:600;background:rgba(28,20,14,.62);color:#fbefd6;padding:6px 12px;border-radius:999px;pointer-events:auto}.stats span{margin:0 5px;white-space:nowrap}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .act{pointer-events:auto;border:0;background:var(--glass);border-radius:16px;padding:9px 14px;min-width:94px;font-size:14px;font-weight:700;line-height:1.15;box-shadow:0 6px 20px rgba(20,12,6,.28);transition:transform .12s}
+  .act:active,.tbtn:active{transform:scale(.95)}.act kbd{display:block;font:inherit;font-size:11px;font-weight:600;opacity:.5;margin-bottom:3px}.act.on{background:#f3d79a}
+  .hint{font-size:13px;color:#fff;background:rgba(28,20,14,.62);padding:7px 14px;border-radius:999px;transition:opacity .5s;text-align:center}
+  .toast{position:fixed;left:50%;top:17%;transform:translateX(-50%);width:max-content;max-width:min(88vw,560px);text-align:center;color:#fff;font-family:Georgia,serif;font-style:italic;font-size:18px;line-height:1.4;text-shadow:0 2px 14px rgba(0,0,0,.85);opacity:0;transition:opacity 1s;pointer-events:none;z-index:6}.toast.show{opacity:1}
+  .info,.notice{position:fixed;left:50%;bottom:150px;transform:translate(-50%,16px);width:min(92vw,440px);padding:14px 16px;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;z-index:7}
+  .info.show,.notice.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  .info .k,.notice .k{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--lac)}.notice{border-left:6px solid #1f4e9c;z-index:8}.notice .k{color:#1f4e9c}
+  .info h3,.notice h3{font-family:Georgia,serif;font-size:20px;margin:3px 0 6px}.info p,.notice p{font-size:14px;line-height:1.5}
+  .x{position:absolute;top:8px;right:8px;border:0;background:transparent;font-size:20px;line-height:1;padding:6px 9px;border-radius:10px}.x:hover{background:var(--paper2)}
+  .panelR{position:fixed;right:10px;top:max(64px,calc(env(safe-area-inset-top) + 64px));width:min(94vw,410px);max-height:calc(100vh - 90px);overflow:auto;padding:16px;z-index:8;transform:translateY(-8px);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+  .panelR.show{opacity:1;transform:none;pointer-events:auto}
+  .panelR h3{font-family:Georgia,serif;font-size:20px;padding-right:30px}.panelR h4{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--lac);margin:16px 0 6px}
+  .sub{font-size:12.5px;line-height:1.45;opacity:.8;margin-bottom:6px}
+  .trkrow{display:flex;align-items:center;gap:4px}
+  .trk{display:flex;align-items:center;gap:10px;width:100%;background:#fff8ea;border-radius:12px;padding:9px 10px;margin-top:6px;text-align:left;border:1px solid var(--line)}.trk:hover{background:#fff1d6}.trk.playing{background:#f6dfd0;border-color:#d9a58c}
+  .trk .ic{flex:0 0 30px;height:30px;border-radius:50%;background:var(--lac);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+  .trk .tt{flex:1;min-width:0}.trk .tt b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trk .tt small{display:block;font-size:12px;opacity:.7}
+  .song{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--line);font-size:13.5px}.song span{flex:1;min-width:0}.song small{opacity:.7}
+  .song a{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--lac);text-decoration:none;border:1px solid #d9a58c;border-radius:999px;padding:4px 9px}
+  .row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.row input[type=url],.row input[type=text]{flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:14px;background:#fff}
+  .btn{border:0;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;background:var(--paper2)}.btn.red{background:var(--lac);color:#fff}.btn.on{background:#f3d79a}.btn[disabled]{opacity:.5;cursor:not-allowed}
+  .filebtn{display:inline-flex;align-items:center;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;background:var(--lac);color:#fff;cursor:pointer;position:relative}.filebtn input{position:absolute;opacity:0;width:1px;height:1px}
+  .del{border:0;background:transparent;font-size:16px;padding:4px 8px;border-radius:8px;opacity:.6}
+  .vol{display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;font-size:13px;margin-top:6px}.vol input{width:100%;accent-color:var(--lac)}
+  .ctrl{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.ctrl .btn{flex:1}.empty{font-size:12.5px;opacity:.65;font-style:italic;padding:6px 0}
+  .menu .btn{display:block;width:100%;text-align:left;margin-top:6px;padding:11px 12px}
+  .stampGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  .stamp{--c:#9b2c24;aspect-ratio:1;border-radius:50%;border:3px double var(--c);color:var(--c);background:rgba(255,255,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;transform:rotate(-8deg);font-family:Georgia,serif;line-height:1.1}
+  .stamp:nth-child(even){transform:rotate(7deg)}.stamp b{font-size:11px;margin:3px 0}.stamp small{font-size:8.5px;font-family:system-ui,sans-serif;opacity:.85}
+  .stamp.no{border-style:dashed;color:#9a8f80;border-color:#bcb2a2;background:transparent;opacity:.75}.stamp.big{width:210px;border-width:6px;background:rgba(255,250,238,.92)}.stamp.big b{font-size:24px;margin:6px 0}.stamp.big small{font-size:13px}
+  .pbar{height:8px;border-radius:99px;background:var(--paper2);overflow:hidden;margin-top:6px}.pbar i{display:block;height:100%;width:0;background:var(--lac);transition:width .6s}
+  .story{margin-top:14px;background:#fff8ea;border:1px solid var(--line);border-radius:12px;padding:12px}.story .k{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--lac)}
+  .story h5{font-family:Georgia,serif;font-size:18px;margin:2px 0 6px}.story p{font-size:14px;line-height:1.55}
+  #stampFx{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0}
+  #stampFx p{font-family:Georgia,serif;font-style:italic;color:#fff;font-size:19px;text-shadow:0 2px 12px rgba(0,0,0,.8)}#stampFx.show{animation:thump 2.6s ease forwards}
+  @keyframes thump{0%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(.94)}24%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
+  .gbe{padding:8px 0;border-bottom:1px dashed var(--line)}.gbe b{font-size:13px;color:var(--lac)}.gbe small{font-size:11.5px;opacity:.6}.gbe p{font-family:Georgia,serif;font-style:italic;font-size:15px;margin-top:2px}
+  #gbList{max-height:34vh;overflow:auto}.picks{display:flex;flex-wrap:wrap;gap:6px}
+  .chipbtn{border:1px solid #d9a58c;background:#fff8ea;border-radius:999px;padding:7px 11px;font-size:12.5px}.chipbtn:hover{background:#f6dfd0}
+  #xqCanvas{width:100%;height:auto;border-radius:10px;display:block;margin-top:8px;touch-action:manipulation;cursor:pointer}
+  .xqn{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-top:8px}.xqn span:first-child{color:#b3261e}
+  #xqStatus{font-family:Georgia,serif;font-size:15px;margin-top:6px}
+  .gmenu{position:fixed;z-index:9;width:220px;padding:12px;opacity:0;pointer-events:none;transform:scale(.92);transition:opacity .2s,transform .2s}.gmenu.show{opacity:1;pointer-events:auto;transform:none}
+  .gmenu b{display:block;font-size:13px;margin:0 26px 8px 2px;color:var(--lac);word-break:break-word}.gmenu .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .gmenu .grid button{border:0;background:#fff8ea;border-radius:12px;padding:10px 6px;font-size:13px;font-weight:700}.gmenu .grid button:hover{background:#f6dfd0}
+  .gmenu .mute{display:block;width:100%;margin-top:6px;border:1px dashed #bcb2a2;background:transparent;border-radius:10px;padding:7px;font-size:12.5px}
+  .modal{position:fixed;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(16,10,6,.75);opacity:0;pointer-events:none;transition:opacity .3s}.modal.show{opacity:1;pointer-events:auto}
+  .pcbox{background:var(--paper);border-radius:18px;padding:14px;width:min(96vw,760px);max-height:94vh;overflow:auto}
+  #pcCanvas{width:100%;height:auto;border-radius:8px;display:block;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+  .pcopt{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:13px}.pcopt select{border:1px solid var(--line);border-radius:10px;padding:8px;background:#fff;font-size:13px}
+  .overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;transition:opacity .7s;background:radial-gradient(ellipse at 50% 35%,rgba(40,26,16,.4),rgba(16,10,6,.8))}
+  .overlay.gone,.loading.gone{opacity:0;pointer-events:none}
+  .panel{background:var(--paper);border-radius:22px;max-width:600px;width:100%;padding:26px 22px;max-height:92vh;overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--lac)}
+  h1{font-family:Georgia,serif;font-size:clamp(32px,8vw,48px);line-height:1.02;margin:6px 0 12px}h1 em{font-style:italic;color:var(--lac)}.lead{font-size:15.5px;line-height:1.6}
+  .namebox{margin:16px 0 4px;background:var(--paper2);border-radius:14px;padding:12px 13px;font-size:14px}
+  .namebox label{display:block;font-weight:700;margin-bottom:6px}
+  .namerow{display:flex;gap:8px;align-items:center}
+  .namerow input{flex:1;min-width:0;border:1.5px solid #cdb98f;border-radius:10px;padding:10px 12px;font-size:17px;font-family:Georgia,serif;background:#fffdf7;color:var(--lac)}
+  .namerow input:focus{border-color:var(--lac)}
+  .ghost{border:1.5px solid var(--lac);background:transparent;color:var(--lac);font-size:12.5px;font-weight:700;padding:9px 11px;border-radius:10px;white-space:nowrap}
+  .big{width:100%;margin-top:12px;padding:15px;font-size:16.5px;font-weight:800;border-radius:14px;border:0;cursor:pointer}.big.red{background:var(--lac);color:#fff}.big.plain{background:#fff8ea;border:1.5px solid var(--line)}.big[disabled]{opacity:.5;cursor:not-allowed}
+  .note{font-size:12.5px;margin-top:6px;line-height:1.45;opacity:.85}.note.good{color:#2f6e3a;opacity:1}.note.bad{color:#b3261e;opacity:1;font-weight:600}
+  table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13.5px}th,td{text-align:left;padding:7px 5px;border-bottom:1px solid #e3d3b2;vertical-align:top}th{font-size:11.5px;text-transform:uppercase;opacity:.7}
+  .fine{font-size:12.5px;margin-top:12px;line-height:1.55;opacity:.75}.faq h3{font-family:Georgia,serif;font-size:16px;margin:14px 0 4px;color:var(--lac)}.faq p{font-size:14px;line-height:1.55}
+  .loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#f6e7c8;font-family:Georgia,serif;font-style:italic;font-size:18px;background:#1a1512;z-index:11;transition:opacity .7s;padding:24px;text-align:center}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid rgba(246,231,200,.25);border-top-color:#f6e7c8;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+  @media (max-width:600px){.act{min-width:72px;padding:8px 9px;font-size:12.5px}.brand h2{font-size:15px}.brand{max-width:46vw;padding:8px 11px}.tbtn{font-size:11.5px;padding:7px 8px}
+    .panelR{left:3vw;right:3vw;width:auto;top:auto;bottom:max(10px,env(safe-area-inset-bottom));max-height:74vh}.info,.notice{bottom:140px}.stampGrid{grid-template-columns:repeat(3,1fr)}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="c" class="full" aria-label="Phố cổ Hà Nội 3D với quán trà đá vỉa hè"></canvas>
+<canvas id="lbl" class="full" aria-hidden="true"></canvas>
+
+<div class="hud hidden" id="hud">
+  <div class="top">
+    <div class="card brand fade">
+      <h2>Trà Đá <span>Phố Cổ</span></h2>
+      <small>Bạn là <b id="myName">…</b></small>
+      <div class="chips"><span class="chip" id="mode">Một mình</span><span class="chip" id="wxChip"></span><button type="button" class="chip np" id="np" aria-live="polite"></button></div>
+    </div>
+    <div class="tools fade">
+      <button class="tbtn red" id="bMusic" type="button" aria-expanded="false">♫ Nhạc</button>
+      <button class="tbtn red" id="bPass" type="button" aria-expanded="false">Hộ chiếu 0/10</button>
+      <button class="tbtn" id="bPlaces" type="button" aria-expanded="false">Dạo phố</button>
+      <button class="tbtn" id="bPhoto" type="button" aria-label="Chụp bưu thiếp">📷</button>
+      <button class="tbtn" id="bMore" type="button" aria-expanded="false" aria-label="Thêm">☰</button>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="hint fade" id="hint">Chạm ghế để ngồi</div>
+    <div class="stats fade" aria-live="polite"><span id="sCups">Cốc trà: 0</span><span id="sSeeds">Hạt: 0</span><span id="sNods">Gật đầu: 0</span><span id="sTime">Đã ngồi: 0:00</span></div>
+    <div class="bar">
+      <button class="act fade" id="a1" type="button"><kbd>1</kbd>Nhấp trà</button>
+      <button class="act fade" id="a2" type="button"><kbd>2</kbd>Cắn hạt</button>
+      <button class="act fade" id="a3" type="button"><kbd>3</kbd>Gật đầu</button>
+      <button class="act" id="a4" type="button"><kbd>4</kbd>Ngắm phố</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" aria-live="polite"></div>
+<div class="card info" id="info" role="dialog" aria-labelledby="infoTitle"><button class="x" id="infoClose" type="button" aria-label="Đóng">×</button><div class="k" id="infoStreet"></div><h3 id="infoTitle"></h3><p id="infoText"></p></div>
+<div class="card notice" id="notice" role="alertdialog" aria-labelledby="noticeTitle"><div class="k">Công an phường · Dân phòng</div><h3 id="noticeTitle">Nhắc nhở trật tự vỉa hè</h3><p id="noticeText"></p>
+  <div class="row"><button class="btn red" id="nYes" type="button">Kê ghế gọn lại</button><button class="btn" id="nLater" type="button">Để cô bán hàng làm</button></div></div>
+<div id="stampFx" aria-hidden="true"></div>
+
+<div class="card gmenu" id="gmenu" role="dialog" aria-label="Cử chỉ"><button class="x" id="gClose" type="button" aria-label="Đóng">×</button><b id="gmName"></b>
+  <div class="grid"><button type="button" data-g="tea">🍵 Mời trà</button><button type="button" data-g="cheers">🥂 Cụng ly</button><button type="button" data-g="wave">👋 Vẫy chào</button><button type="button" data-g="seat" id="gSeat">🪑 Nhường ghế</button></div>
+  <button type="button" class="mute" id="gMute">🙈 Ẩn tên</button></div>
+
+<div class="card panelR menu" id="more" role="dialog" aria-label="Thêm"><button class="x" data-close="more" type="button" aria-label="Đóng">×</button><h3>Tuỳ chọn</h3>
+  <button class="btn" id="bRename" type="button">✎ Đổi tên của bạn</button>
+  <button class="btn" id="bGbook" type="button">✍ Sổ lưu bút của quán</button>
+  <button class="btn" id="bWeather" type="button">Trời: Theo Hà Nội</button>
+  <button class="btn" id="bSeason" type="button">Mùa: Tự động</button>
+  <button class="btn" id="bTime" type="button">Giờ: Theo Hà Nội</button>
+  <button class="btn" id="bSound" type="button">Tiếng phố: Bật</button>
+  <button class="btn" id="bQ" type="button">Đồ hoạ: Cao</button>
+  <button class="btn red" id="bInstall" type="button" hidden>⬇ Cài lên màn hình chính</button>
+  <p class="sub" id="iosHint" hidden style="margin-top:8px">Trên iPhone: bấm nút Chia sẻ của Safari rồi chọn “Thêm vào MH chính”.</p>
+  <button class="btn" id="bHelp" type="button">? Hướng dẫn</button>
+</div>
+
+<div class="card panelR" id="rename" role="dialog" aria-labelledby="renTitle"><button class="x" data-close="rename" type="button" aria-label="Đóng">×</button><h3 id="renTitle">Đổi tên</h3>
+  <p class="sub">2–20 ký tự: chữ (có dấu), số, khoảng trắng và dấu . ' -. Để trống để dùng tên ngẫu nhiên. Mỗi phút đổi được một lần.</p>
+  <form class="row" id="renForm"><input type="text" id="renIn" maxlength="24" autocomplete="nickname" aria-label="Tên mới"><button class="btn red" type="submit">Lưu</button></form>
+  <div class="row"><button class="btn" id="renSuggest" type="button">🎲 Gợi ý tên</button></div>
+  <p class="note" id="renMsg" aria-live="polite"></p></div>
+
+<div class="card panelR" id="places" role="dialog" aria-labelledby="placesTitle"><button class="x" data-close="places" type="button" aria-label="Đóng">×</button><h3 id="placesTitle">Dạo phố</h3>
+  <p class="sub">Chọn nơi muốn tới, nhân vật sẽ tự đi. Con phố gom các địa danh về gần nhau cho vui, không đúng vị trí thật.</p><div id="placeList"></div></div>
+
+<div class="card panelR" id="passport" role="dialog" aria-labelledby="passTitle"><button class="x" data-close="passport" type="button" aria-label="Đóng">×</button><h3 id="passTitle">Hộ chiếu phố cổ</h3>
+  <p class="sub" id="pProg" aria-live="polite"></p><div class="pbar"><i id="pBar"></i></div><div class="stampGrid" id="stampGrid"></div>
+  <div class="story" id="stampStory" hidden><div class="k" id="ssK"></div><h5 id="ssT"></h5><p id="ssD"></p></div>
+  <p class="sub" style="margin-top:12px">Câu chuyện được tóm lược từ các tư liệu và truyền thuyết phổ biến về phố cổ.</p>
+  <div class="ctrl"><button class="btn" id="pReset" type="button">Làm lại</button><button class="btn red" id="pCert" type="button" disabled>Tải giấy chứng nhận</button></div></div>
+
+<div class="card panelR" id="gbook" role="dialog" aria-labelledby="gbTitle"><button class="x" data-close="gbook" type="button" aria-label="Đóng">×</button><h3 id="gbTitle">Sổ lưu bút của quán</h3>
+  <p class="sub">Để lại một dòng cho người ghé sau. Chỉ chọn câu có sẵn, không có chat.</p><div id="gbList"></div>
+  <h4>Viết vào sổ</h4><div class="picks" id="gbPick"></div><p class="sub" id="gbMsg" aria-live="polite" style="margin-top:6px"></p></div>
+
+<div class="card panelR" id="chessP" role="dialog" aria-labelledby="xqTitle"><button class="x" data-close="chessP" type="button" aria-label="Đóng">×</button><h3 id="xqTitle">Cờ tướng vỉa hè</h3>
+  <div class="xqn"><span id="xqRed">Đỏ: —</span><span id="xqBlack">Đen: —</span></div><canvas id="xqCanvas" width="500" height="550"></canvas><div id="xqStatus" aria-live="polite"></div>
+  <div class="ctrl"><button class="btn red" id="xqSitR" type="button">Cầm quân Đỏ</button><button class="btn red" id="xqSitB" type="button">Cầm quân Đen</button><button class="btn" id="xqAi" type="button" hidden>Chơi với máy</button>
+    <button class="btn" id="xqReset" type="button" hidden>Ván mới</button><button class="btn" id="xqLeave" type="button" hidden>Rời bàn</button></div>
+  <p class="sub" style="margin-top:8px">Chạm quân của mình rồi chạm điểm muốn đi (chấm xanh). Ai trong quán cũng xem được ván cờ.</p></div>
+
+<div class="card panelR" id="radio" role="dialog" aria-labelledby="radioTitle"><button class="x" data-close="radio" type="button" aria-label="Đóng">×</button><h3 id="radioTitle">Đài phố cổ</h3>
+  <h4>Nhạc nền phố cổ</h4><p class="sub">Bốn bản không lời soạn riêng cho game, tiếng sáo trúc, đàn tranh, đàn bầu mô phỏng.</p><div id="synthList"></div>
+  <h4>Ca khúc Hà Nội xưa</h4><p class="sub">Các bài này còn bản quyền nên game không kèm sẵn bản thu. Nghe ở kênh chính thức, hoặc thêm bản nhạc bạn được phép dùng.</p><div id="songList"></div>
+  <h4>Danh sách của bạn</h4><div id="userList"></div>
+  <div class="row"><label class="filebtn">＋ Thêm bài từ máy<input type="file" id="fileIn" accept="audio/*,.mp3,.m4a,.ogg,.wav" multiple></label></div>
+  <form class="row" id="urlForm"><input type="url" id="urlIn" placeholder="Dán link file nhạc (https://…/bai-hat.mp3)" aria-label="Link file nhạc"><button class="btn" type="submit">Thêm</button></form>
+  <p class="sub" id="radioMsg" aria-live="polite" style="margin-top:6px"></p>
+  <h4>Âm lượng</h4><div class="vol"><label for="volMusic">Nhạc</label><input type="range" id="volMusic" min="0" max="100" value="70"><label for="volCity">Tiếng phố</label><input type="range" id="volCity" min="0" max="100" value="80"></div>
+  <div class="ctrl"><button class="btn" id="mStop" type="button">■ Dừng nhạc</button><button class="btn red" id="mNext" type="button">Bài tiếp ▶</button></div></div>
+
+<div class="modal" id="postcard" role="dialog" aria-label="Bưu thiếp Hà Nội"><div class="pcbox">
+  <canvas id="pcCanvas" width="1600" height="1100"></canvas>
+  <div class="pcopt"><button class="btn on" data-pcs="co" type="button">Bưu thiếp cổ</button><button class="btn" data-pcs="phim" type="button">Phim cũ</button><button class="btn" data-pcs="polaroid" type="button">Ảnh lấy liền</button>
+    <select id="pcCap" aria-label="Lời ghi"></select><label><input type="checkbox" id="pcName" checked> Hiện tên</label></div>
+  <div class="ctrl"><button class="btn" id="pcAgain" type="button">Chụp lại</button><button class="btn" id="pcSave" type="button">⬇ Tải ảnh</button><button class="btn red" id="pcShare" type="button">Chia sẻ</button><button class="btn" id="pcClose" type="button">Đóng</button></div></div></div>
+
+<div class="loading" id="bootLoad"><div class="spin"></div><span>Đang dựng phố cổ…</span></div>
+<div class="loading gone" id="loading"><div class="spin"></div><span id="loadText">Cô bán hàng đang lau ghế…</span></div>
+
+<div class="overlay" id="intro"><div class="panel">
+  <div class="eyebrow">Hà Nội · Phố cổ · 3D</div><h1>Trà Đá <em>Phố Cổ</em></h1>
+  <p class="lead">Kéo một chiếc ghế nhựa dưới gốc sấu, nhấp ngụm trà đá, mời người ngồi cạnh một cốc, rủ nhau đánh ván cờ tướng. Tàu điện leng keng, tàu hoả len qua phố đường tàu, từ cầu Long Biên dạo tới Hồ Gươm. Không ai hỏi bạn làm nghề gì. Cũng chẳng có khung chat nào.</p>
+  <div class="namebox">
+    <label for="nickIn">Tên của bạn trong quán</label>
+    <div class="namerow"><input type="text" id="nickIn" maxlength="24" autocomplete="nickname" spellcheck="false" aria-describedby="nickMsg"><button class="ghost" id="reroll" type="button">🎲 Gợi ý</button></div>
+    <p class="note" id="nickMsg" aria-live="polite"></p>
+  </div>
+  <button class="big red" id="startOnline" type="button">Ngồi cùng người thật</button><p class="note" id="onlineNote"></p>
+  <button class="big plain" id="startSolo" type="button">Ngồi một mình</button>
+  <table>
+    <tr><th>Muốn làm gì</th><th>Máy tính</th><th>Điện thoại</th></tr>
+    <tr><td>Ngồi · đi lại</td><td>Bấm ghế · W A S D hoặc bấm mặt đường</td><td>Chạm ghế · chạm mặt đường</td></tr>
+    <tr><td>Mời trà, cụng ly, vẫy chào</td><td>Bấm vào người ngồi gần</td><td>Chạm vào người ngồi gần</td></tr>
+    <tr><td>Đánh cờ tướng</td><td>Bấm vào bàn cờ cạnh quán</td><td>Chạm vào bàn cờ</td></tr>
+    <tr><td>Xoay · thu phóng</td><td>Kéo chuột · lăn chuột</td><td>Vuốt · chụm hai ngón</td></tr>
+    <tr><td>Nhạc · Dạo phố · Hộ chiếu · Bưu thiếp · Lưu bút · Đổi tên</td><td>M · G · P · C · L · N</td><td>Nút trên cùng và ☰</td></tr>
+  </table>
+  <p class="fine">Tên hiện cho mọi người trong quán, nên đừng dùng họ tên đầy đủ hay số điện thoại. Tên có từ ngữ thô tục hoặc giả danh công an, dân phòng sẽ không được chấp nhận. Cần trình duyệt hỗ trợ WebGL2; máy yếu chọn “Đồ hoạ: Nhẹ” trong ☰.</p>
+</div></div>
+
+<div class="overlay gone" id="guide" role="dialog" aria-modal="true" aria-labelledby="gTitle"><div class="panel faq">
+  <div class="eyebrow">Hướng dẫn</div><h1 id="gTitle" style="font-size:30px">Ngồi sao cho đúng điệu?</h1>
+  <h3>Tên của bạn</h3><p>Đặt tên ở màn hình đầu hoặc trong ☰ › Đổi tên. Nếu trong quán đã có người trùng tên, tên bạn được thêm số phía sau. Thấy tên ai không phù hợp, chạm vào người đó và chọn “Ẩn tên”: chỉ máy của bạn không hiện tên đó nữa.</p>
+  <h3>Mời trà, cụng ly</h3><p>Chạm vào người đang ở gần. Mời trà thì cốc của họ được rót đầy. Hai người cùng cụng ly với nhau sẽ có tiếng “Dzô!”. Đang ngồi thì có thể nhường ghế cho người đứng.</p>
+  <h3>Cờ tướng vỉa hè</h3><p>Bàn cờ đặt cạnh quán trà. Ngồi cầm quân Đỏ hoặc Đen, chờ người khác ngồi đối diện, hoặc bấm “Chơi với máy”.</p>
+  <h3>Hộ chiếu phố cổ</h3><p>Ghé đủ 10 địa danh để nhận dấu và tải giấy chứng nhận. Có hai dấu thưởng: kê ghế gọn khi quán đông, và dạo chợ hoa ngày Tết.</p>
+  <h3>Bưu thiếp</h3><p>Bấm 📷 để chụp cảnh đang xem, chọn kiểu bưu thiếp cổ, phim cũ hoặc ảnh lấy liền, rồi tải về hay chia sẻ.</p>
+  <h3>Phố đường tàu</h3><p>Khi chuông báo kêu và rào chắn hạ, xe dừng lại cho tàu đi qua. Đứng trên ray sẽ được nhắc ra lề.</p>
+  <h3>Công an phường, dân phòng</h3><p>Khi quán có từ 10 khách trở lên, họ tới nhắc kê ghế gọn. Bất kỳ ai trong quán bấm “Kê ghế gọn lại” thì cả quán đều thấy.</p>
+  <button class="big red" id="closeGuide" type="button">Ngồi tiếp</button></div></div>
+
+<script src="js/gl.js"></script>
+<script src="js/world.js"></script>
+<script src="js/actors.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/xiangqi.js"></script>
+<script src="js/room.js"></script>
+<script src="js/passport.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
