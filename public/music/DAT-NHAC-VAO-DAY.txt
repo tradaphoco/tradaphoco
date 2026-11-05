@@ -1,2 +1,0 @@
-Đặt các file nhạc bạn ĐÃ CÓ QUYỀN phát công khai vào thư mục này (mp3, m4a, ogg, wav),
-rồi khai báo trong LICENSED_TRACKS ở đầu file public/js/game.js.
