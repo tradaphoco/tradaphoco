@@ -1,0 +1,1 @@
+Đặt các file nhạc bạn ĐÃ CÓ QUYỀN phát công khai vào đây, rồi khai báo trong mục tracks của js/config.js.

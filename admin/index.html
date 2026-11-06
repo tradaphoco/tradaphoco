@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Quản trị · Trà Đá Phố Cổ</title>
+<style>
+  :root{--lac:#9b2c24;--paper:#f7f0e1;--line:#e3d3b2}*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,sans-serif;background:var(--paper);color:#2a2320}
+  header{background:var(--lac);color:#fff;padding:12px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}header h1{font:700 19px Georgia,serif;margin:0;flex:1}
+  main{padding:14px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));max-width:1400px;margin:auto}
+  section{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}h2{font:700 15px Georgia,serif;color:var(--lac);margin:0 0 8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px 4px;border-bottom:1px solid #f0e6d2;text-align:left;vertical-align:top}th{font-size:11px;text-transform:uppercase;opacity:.65}
+  button{border:0;border-radius:8px;padding:5px 9px;font:600 12px system-ui;background:#efe3c8;cursor:pointer;margin:1px}button.red{background:var(--lac);color:#fff}input{border:1px solid #cdb98f;border-radius:8px;padding:7px 9px;font:inherit}
+  .kpi{display:flex;gap:10px;flex-wrap:wrap}.kpi div{background:#fff8ea;border-radius:10px;padding:8px 12px;min-width:92px}.kpi b{display:block;font-size:20px;color:var(--lac)}
+  .muted{opacity:.6;font-size:12px}.done{opacity:.45}#login{max-width:420px;margin:12vh auto;background:#fff;padding:22px;border-radius:14px;border:1px solid var(--line)}
+  .bar{fill:#9b2c24}.bar2{fill:#d9a58c}svg text{font:10px system-ui;fill:#6a5a48}.warn{background:#fff3cd;border:1px solid #e9c46a;border-radius:10px;padding:8px 10px;margin-bottom:8px}
+</style></head><body>
+<div id="login"><h2>Quản trị Trà Đá Phố Cổ</h2><p class="muted">Nhập khoá quản trị (biến môi trường ADMIN_KEY trên Render).</p>
+  <form id="lf"><input type="password" id="k" style="width:100%" autocomplete="current-password" placeholder="Khoá quản trị"><p><button class="red" type="submit">Vào trang quản trị</button></p><p id="le" style="color:#b3261e"></p></form></div>
+<div id="app" hidden>
+<header><h1>Trà Đá Phố Cổ · Quản trị</h1><span id="hd"></span><button id="rf">Làm mới</button><button id="lo">Thoát</button></header>
+<main>
+  <section style="grid-column:1/-1"><div id="warn"></div><div class="kpi" id="kpi"></div></section>
+  <section><h2>Đang trong quán</h2><div id="online"></div></section>
+  <section><h2>Báo cáo người chơi</h2><div id="reports"></div></section>
+  <section style="grid-column:1/-1"><h2>Thống kê 30 ngày</h2><div id="chart"></div><div id="daytable"></div></section>
+  <section><h2>Thông báo tới mọi người đang chơi</h2><form id="af" style="display:flex;gap:6px"><input id="at" maxlength="200" style="flex:1" placeholder="Ví dụ: Tối nay 21:00 máy chủ bảo trì 5 phút"><button class="red">Gửi</button></form><p class="muted" id="am"></p></section>
+  <section><h2>Từ bị chặn thêm trong tên</h2><form id="bf" style="display:flex;gap:6px"><input id="bw" style="flex:1" placeholder="Từ hoặc cụm từ (không cần dấu)"><button class="red">Chặn</button></form><div id="blocked"></div></section>
+  <section><h2>Đang bị khoá</h2><div id="bans"></div></section>
+  <section><h2>Sổ lưu bút gần đây</h2><div id="gb"></div></section>
+  <section><h2>Nhật ký máy chủ</h2><pre id="log" style="white-space:pre-wrap;font-size:12px;margin:0"></pre></section>
+</main></div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id); let KEY = sessionStorage.getItem("tdpcAdmin") || "";
+const GB = ["Hà Nội mùa này đẹp lắm.", "Trà đá vẫn ngon như ngày xưa.", "Lần đầu ghé phố cổ, sẽ quay lại!", "Nhớ Hà Nội quá.", "Chúc cô bán hàng đắt khách.", "Ai đi Hồ Gươm cùng không?", "Gió mùa về rồi, mặc ấm nhé.", "Bình yên là ngồi đây.", "Cảm ơn mọi người đã ghé quán.", "Hẹn gặp lại ở phố cổ.", "Chúc mừng năm mới!", "Kê ghế gọn, phố thêm xinh."];
+const STAMP = { longbien: "Cầu Long Biên", duongtau: "Phố đường tàu", dongxuan: "Chợ Đồng Xuân", gate: "Ô Quan Chưởng", market: "Chợ Hàng Bè", pho: "Phở Bát Đàn", giang: "Cà phê Giảng", lavong: "Chả cá Lã Vọng", kem: "Kem Tràng Tiền", lake: "Hồ Gươm", vanminh: "Văn minh", tet: "Tết" };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const t = ts => new Date(ts).toLocaleString("vi-VN", { hour12: false });
+async function api(path, body) { const r = await fetch(path + (body ? "" : "?key=" + encodeURIComponent(KEY)), body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ key: KEY }, body)) } : {}); const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status); return j; }
+async function act(op, o, confirmMsg) { if (confirmMsg && !confirm(confirmMsg)) return; try { await api("/api/admin/act", Object.assign({ op }, o)); load(); } catch (e) { alert(e.message); } }
+window.act = act;
+async function load() {
+  let s; try { s = await api("/api/admin/state"); } catch (e) { $("app").hidden = true; $("login").hidden = false; $("le").textContent = e.message; return; }
+  $("login").hidden = true; $("app").hidden = false;
+  $("hd").textContent = "Cập nhật " + new Date().toLocaleTimeString("vi-VN");
+  $("warn").innerHTML = s.store === "file" ? '<div class="warn">Dữ liệu đang lưu bằng file trên máy chủ, sẽ <b>mất khi Render khởi động lại</b>. Đặt UPSTASH_REDIS_REST_URL và UPSTASH_REDIS_REST_TOKEN để lưu lâu dài.</div>' : "";
+  const d = s.days[Object.keys(s.days).sort().pop()] || {};
+  $("kpi").innerHTML = [["Đang chơi", s.online], ["Đỉnh từ lúc chạy", s.peak], ["Khách hôm nay", d.visitors || 0], ["Lượt chơi hôm nay", d.sessions || 0],
+    ["Phút ngồi TB", d.sessions ? Math.round((d.secs || 0) / d.sessions / 60 * 10) / 10 : 0], ["Báo cáo hôm nay", d.reports || 0], ["Bộ nhớ (MB)", s.memoryMB], ["Lỗi", s.errors]].map(([a, b]) => `<div>${a}<b>${b}</b></div>`).join("");
+  $("online").innerHTML = s.rooms.length ? s.rooms.map(r => `<p><b>Quán số ${r.room}</b> <span class="muted">${r.npcs} khách ảo · ${r.order}</span></p><table>${r.players.map(p => `<tr><td>${p.nm ? "<b>" + esc(p.nm) + "</b>" : '<span class="muted">tên ngẫu nhiên</span>'}<div class="muted">#${p.id} · ${esc(p.ip)} · vào ${t(p.since)}</div></td><td style="white-space:nowrap">
+    ${p.nm ? `<button onclick="act('hideName',{pid:${p.id}})">Ẩn tên</button>` : ""}<button onclick="act('kick',{pid:${p.id}},'Mời người này rời quán?')">Mời ra</button><button class="red" onclick="act('ban',{pid:${p.id},days:prompt('Khoá bao nhiêu ngày?','7')},'Khoá người này?')">Khoá</button></td></tr>`).join("")}</table>`).join("") : '<p class="muted">Chưa có ai.</p>';
+  $("reports").innerHTML = s.reports.length ? "<table><tr><th>Lúc</th><th>Tên bị báo cáo</th><th>Lý do</th><th></th></tr>" + s.reports.map(r => `<tr class="${r.done ? "done" : ""}"><td>${t(r.ts)}</td><td><b>${esc(r.name)}</b><div class="muted">quán ${r.room} · ${r.target ? "#" + r.target : "đã rời"} · ${esc(r.ip)}</div></td><td>${esc(r.reason)}${r.done ? `<div class="muted">${esc(r.done)}</div>` : ""}</td>
+    <td style="white-space:nowrap">${r.done ? "" : `${r.target ? `<button onclick="act('hideName',{pid:${r.target}}).then(()=>act('resolve',{id:'${r.id}',result:'Đã ẩn tên'}))">Ẩn tên</button>` : ""}${r.ip ? `<button class="red" onclick="act('ban',{ip:'${r.ip}',days:prompt('Khoá bao nhiêu ngày?','7')},'Khoá?').then(()=>act('resolve',{id:'${r.id}',result:'Đã khoá'}))">Khoá</button>` : ""}<button onclick="act('block',{word:prompt('Chặn từ nào trong tên?', ${JSON.stringify(esc(r.name))})})">Chặn từ</button><button onclick="act('resolve',{id:'${r.id}',result:'Bỏ qua'})">Bỏ qua</button>`}</td></tr>`).join("") + "</table>" : '<p class="muted">Chưa có báo cáo nào.</p>';
+  const ds = Object.keys(s.days).sort().slice(-30), W = 900, H = 160, max = Math.max(1, ...ds.map(k => s.days[k].visitors || 0)), bw = Math.min(60, W / Math.max(ds.length, 1));
+  $("chart").innerHTML = `<svg viewBox="0 0 ${W} ${H + 30}" style="width:100%;height:auto">${ds.map((k, i) => { const v = s.days[k], h = (v.visitors || 0) / max * H, h2 = (v.sessions || 0) / Math.max(max, v.sessions || 0) * H;
+    return `<rect class="bar2" x="${i * bw + bw * .1}" y="${H - h2}" width="${bw * .8}" height="${h2}"/><rect class="bar" x="${i * bw + bw * .25}" y="${H - h}" width="${bw * .5}" height="${h}"><title>${k}: ${v.visitors} khách, ${v.sessions} lượt</title></rect><text x="${i * bw + bw / 2}" y="${H + 14}" text-anchor="middle">${k.slice(8)}</text>`; }).join("")}<text x="0" y="${H + 28}">Đỏ đậm: khách (theo địa chỉ) · nhạt: lượt chơi</text></svg>`;
+  $("daytable").innerHTML = "<table><tr><th>Ngày</th><th>Khách</th><th>Lượt</th><th>Phút TB</th><th>Đông nhất</th><th>Hướng dẫn xong/bỏ</th><th>Dấu hộ chiếu nhận nhiều nhất</th></tr>" + ds.slice().reverse().slice(0, 14).map(k => { const v = s.days[k], st = Object.entries(v.stamps || {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([a, b]) => (STAMP[a] || a) + " " + b).join(", ");
+    return `<tr><td>${k}</td><td>${v.visitors}</td><td>${v.sessions}</td><td>${v.sessions ? Math.round(v.secs / v.sessions / 6) / 10 : 0}</td><td>${v.peak}</td><td>${(v.ev || {}).tut || 0} / ${(v.ev || {}).tut_skip || 0}</td><td>${esc(st)}</td></tr>`; }).join("") + "</table>";
+  $("blocked").innerHTML = s.blocked.map(w => `<button onclick="act('unblock',{word:'${esc(w)}'})">${esc(w)} ✕</button>`).join(" ") || '<p class="muted">Chưa có.</p>';
+  $("bans").innerHTML = Object.entries(s.bans).map(([h, b]) => `<p>${esc(h)} · đến ${t(b.until)} ${esc(b.why)} <button onclick="act('unban',{ip:'${h}'})">Bỏ khoá</button></p>`).join("") || '<p class="muted">Không có.</p>';
+  $("gb").innerHTML = s.gb.map(e => `<p><b>${esc(e.nm || "Khách")}</b> <span class="muted">${t(e.ts)}</span> “${esc(GB[e.i])}” <button onclick="act('delGb',{ts:${e.ts}},'Xoá dòng này?')">Xoá</button></p>`).join("") || '<p class="muted">Trống.</p>';
+  $("log").textContent = s.recent.join("\n");
+}
+$("lf").addEventListener("submit", e => { e.preventDefault(); KEY = $("k").value; sessionStorage.setItem("tdpcAdmin", KEY); load(); });
+$("lo").addEventListener("click", () => { sessionStorage.removeItem("tdpcAdmin"); KEY = ""; location.reload(); });
+$("rf").addEventListener("click", load);
+$("af").addEventListener("submit", async e => { e.preventDefault(); try { const r = await api("/api/admin/act", { op: "announce", text: $("at").value }); $("am").textContent = "Đã gửi tới " + r.sent + " người."; $("at").value = ""; } catch (x) { $("am").textContent = x.message; } });
+$("bf").addEventListener("submit", e => { e.preventDefault(); act("block", { word: $("bw").value }); $("bw").value = ""; });
+if (KEY) load(); setInterval(() => { if (KEY && !document.hidden) load(); }, 15000);
+</script></body></html>

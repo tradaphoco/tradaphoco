@@ -1,0 +1,13 @@
+/* Trà Đá Phố Cổ — service worker: mở nhanh, chạy được chế độ ngồi một mình khi mất mạng */
+const CACHE = "tdpc-v6.2.1";
+const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png",
+  "js/vendor/three.module.min.js", "js/vendor/GLTFLoader.js", "js/vendor/BufferGeometryUtils.js", "js/boot3d.js",
+  "js/config.js", "js/core.js", "js/render3.js", "js/world.js", "js/actors.js", "js/audio.js", "js/xiangqi.js", "js/room.js", "js/passport.js", "js/ui.js", "js/game.js",
+  "js/people3d.js", "js/audio_vi.js", "js/community.js", "js/tutorial.js"];
+self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
+self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
+self.addEventListener("fetch", e => {
+  const u = new URL(e.request.url);
+  if (e.request.method !== "GET" || u.origin !== location.origin || /\/(ws|health|stats|admin)/.test(u.pathname) || u.pathname.startsWith("/api/") || u.pathname.includes("/music/")) return;
+  e.respondWith(fetch(e.request).then(r => { if (r.ok) { const cp = r.clone(); caches.open(CACHE).then(c => c.put(e.request, cp)); } return r; }).catch(() => caches.match(e.request).then(r => r || caches.match("index.html"))));
+});

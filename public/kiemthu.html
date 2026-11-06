@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kiểm thử 6.2 · Trà Đá Phố Cổ</title>
+<style>
+  :root{--lac:#9b2c24;--paper:#f7f0e1;--paper2:#efe3c8;--line:#e3d3b2;--ok:#2f6e3a;--warn:#b7791f;--bad:#b3261e;--ink:#2a2320}
+  *{box-sizing:border-box}html,body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{background:var(--lac);color:#fff;padding:14px 18px}header h1{font:700 21px Georgia,serif;margin:0}header p{margin:2px 0 0;opacity:.85;font-size:13px}
+  nav{display:flex;gap:6px;padding:10px 14px 0;max-width:1100px;margin:auto}
+  nav button{border:0;border-radius:12px 12px 0 0;padding:10px 16px;font:700 14px system-ui;background:var(--paper2);color:var(--ink);cursor:pointer}
+  nav button[aria-selected=true]{background:#fff;color:var(--lac)}
+  main{max-width:1100px;margin:0 auto 40px;background:#fff;border-radius:0 14px 14px 14px;padding:16px 18px;min-height:60vh}
+  h2{font:700 18px Georgia,serif;color:var(--lac);margin:18px 0 8px}h2:first-child{margin-top:0}
+  .muted{opacity:.7;font-size:13px}.btn{border:0;border-radius:10px;padding:8px 12px;font:700 13px system-ui;background:var(--paper2);color:var(--ink);cursor:pointer}
+  .btn.red{background:var(--lac);color:#fff}.btn:disabled{opacity:.5;cursor:not-allowed}.btn:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e7b34a;outline-offset:2px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .bar{height:10px;background:var(--paper2);border-radius:99px;overflow:hidden;flex:1;min-width:140px}.bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .4s}
+  .grp{border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:4px 12px 8px}.grp h3{font:700 15px system-ui;margin:8px 0 4px;display:flex;justify-content:space-between;gap:8px}
+  .grp h3 small{font-weight:600;opacity:.6}
+  .ck{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px dashed #efe6d4}.ck:first-of-type{border-top:0}
+  .ck input{width:20px;height:20px;margin-top:2px;accent-color:var(--ok);flex:0 0 auto}.ck label{cursor:pointer}.ck .hint{display:block;font-size:12.5px;opacity:.72;margin-top:2px}
+  .ck.done label>span:first-child{text-decoration:line-through;opacity:.6}
+  code{background:#f4ecdc;border-radius:5px;padding:1px 5px;font-size:12.5px;word-break:break-word}
+  .note{background:#fff8ea;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:10px 0}
+  .note.warn{background:#fff3cd;border-color:#e9c46a}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-top:8px}
+  .card{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px}
+  .card h4{margin:0;font:700 15px system-ui;display:flex;justify-content:space-between;gap:6px;align-items:baseline}.card h4 code{font-weight:500}
+  .say{font:italic 16px Georgia,serif;background:#fffaf0;border-left:4px solid var(--lac);padding:6px 10px;border-radius:0 8px 8px 0}
+  .badge{font-size:12px;font-weight:700;border-radius:99px;padding:2px 9px;background:var(--paper2);white-space:nowrap}.badge.ok{background:#dcefd9;color:var(--ok)}.badge.warn{background:#fdecc8;color:#8a5a00}.badge.bad{background:#f8d7d4;color:var(--bad)}
+  .qa{font-size:12.5px;display:flex;flex-wrap:wrap;gap:4px 10px}.qa span.ok{color:var(--ok)}.qa span.warn{color:#8a5a00}.qa span.bad{color:var(--bad)}
+  .rate{display:flex;gap:4px;flex-wrap:wrap}.rate button{flex:1 1 30%;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:6px 4px;font:600 12px system-ui;cursor:pointer}
+  .rate button[aria-pressed=true].r1{background:#dcefd9;border-color:var(--ok)}.rate button[aria-pressed=true].r2{background:#fdecc8;border-color:var(--warn)}.rate button[aria-pressed=true].r3{background:#f8d7d4;border-color:var(--bad)}
+  textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:13px system-ui;resize:vertical;min-height:34px}
+  .file{font-size:12.5px}.file input{font-size:12px;max-width:100%}
+  .ctl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center;font-size:14px;max-width:560px}.ctl input[type=range]{width:100%;accent-color:var(--lac)}
+  #out{width:100%;min-height:180px;font:13px ui-monospace,Consolas,monospace;margin-top:8px}
+  .sum{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.sum div{background:#fff8ea;border-radius:10px;padding:6px 12px;font-size:13px}.sum b{display:block;font-size:20px;color:var(--lac)}
+  [hidden]{display:none!important}
+  @media print{nav,.noprint,#tabVoice{display:none!important}main{border-radius:0;padding:0}body{background:#fff}.grp{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><h1>Trà Đá Phố Cổ · Kiểm thử bản 6.2</h1><p>Checklist triển khai và kiểm thử giọng rao. Kết quả tự lưu trên trình duyệt này.</p></header>
+<nav role="tablist">
+  <button role="tab" id="tb1" aria-selected="true" aria-controls="tabCheck">✅ Checklist triển khai</button>
+  <button role="tab" id="tb2" aria-selected="false" aria-controls="tabVoice">🔊 Kiểm thử giọng rao</button>
+</nav>
+<main>
+<section id="tabCheck" role="tabpanel" aria-labelledby="tb1">
+  <div class="row noprint"><div class="bar"><i id="ckBar"></i></div><b id="ckPct">0/0</b>
+    <button class="btn" id="ckCopy" type="button">Sao chép báo cáo</button><button class="btn" id="ckPrint" type="button">In</button><button class="btn" id="ckReset" type="button">Xoá đánh dấu</button></div>
+  <p class="muted" id="ckMsg" aria-live="polite"></p>
+  <div id="ckList"></div>
+</section>
+
+<section id="tabVoice" role="tabpanel" aria-labelledby="tb2" hidden>
+  <div class="note warn" id="fileWarn" hidden>Bạn đang mở trang trực tiếp từ máy (<code>file://</code>), trình duyệt chặn việc phân tích âm thanh. Hãy mở trang qua đường dẫn web, ví dụ <code>https://hungq.sg-host.com/kiemthu.html</code>, hoặc chạy <code>node server.js</code> rồi mở <code>http://localhost:8080/kiemthu.html</code>. Ở chế độ này chỉ nghe thử được.</div>
+  <h2>1. Kiểm tra tự động</h2>
+  <p class="muted">Nạp cả 14 file trong <code>sound/</code>, đo độ dài, âm lượng đỉnh, rè (clipping), khoảng lặng đầu và cuối. Nên dùng tai nghe.</p>
+  <div class="row"><button class="btn red" id="runAll" type="button">▶ Kiểm tra tất cả file</button><span id="allMsg" aria-live="polite"></span></div>
+  <div class="sum" id="sum"></div>
+
+  <h2>2. Nghe và chấm từng câu</h2>
+  <div class="ctl">
+    <label for="vol">Âm lượng</label><input type="range" id="vol" min="0" max="150" value="100">
+    <label for="mode">Cách nghe</label>
+    <select id="mode" class="btn" style="font-weight:600"><option value="game">Như trong game (loa có vang, rao ở bên cạnh)</option><option value="dry">Nghe khô, không hiệu ứng</option></select>
+  </div>
+  <details class="note"><summary><b>Tiêu chí chấm “chuẩn tiếng Việt”</b></summary>
+    <ul style="margin:6px 0 0;padding-left:18px">
+      <li><b>Đúng chữ, đủ 6 thanh:</b> “nóng” (sắc), “giòn” (huyền), “lạc” (nặng), “quýt” (sắc), “nướng” (sắc), “cảm ơn” (hỏi), “hướng dương” (sắc, ngang).</li>
+      <li><b>Giọng Bắc:</b> “giòn”, “dương” đọc âm /z/; “tr” và “ch” gần nhau; không đọc “r” rung.</li>
+      <li><b>Ngữ điệu rao:</b> chữ cuối (“đây”, “không”) kéo dài và vút lên, như người bán hàng gọi với từ xa. Câu đọc đều đều như đọc tin là chưa đạt.</li>
+      <li><b>Loa phường:</b> rõ từng chữ dù có tiếng rè loa; “Thông báo, thông báo” tách rõ.</li>
+      <li><b>Chấm “Còn máy”</b> khi đúng chữ nhưng nghe ra giọng tổng hợp. <b>Chấm “Sai”</b> khi sai chữ, sai dấu hoặc không nghe ra.</li>
+    </ul></details>
+  <div class="cards" id="cards"></div>
+
+  <h2>3. Danh sách thu âm lại</h2>
+  <p class="muted">Tạo kịch bản cho người đọc từ các câu chấm “Còn máy” hoặc “Sai” (hoặc tất cả). Gửi qua Zalo cho người thu âm.</p>
+  <div class="row"><button class="btn red" id="mkScript" type="button">Tạo danh sách thu âm</button><button class="btn" id="mkAll" type="button">Tạo cho tất cả câu</button>
+    <button class="btn" id="mkReport" type="button">Xuất kết quả kiểm thử</button><button class="btn" id="cpOut" type="button">Sao chép</button><span id="cpMsg" class="muted" aria-live="polite"></span></div>
+  <textarea id="out" readonly aria-label="Kết quả"></textarea>
+</section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } } };
+
+/* ================= CHECKLIST ================= */
+const CK = [
+  ["A. Chuẩn bị trên máy tính", [
+    ["Sao lưu bản đang chạy", "SiteGround › File Manager: nén các file game trong <code>public_html</code> thành <code>backup-truoc-6.2.zip</code> rồi tải về. GitHub: ghi lại mã commit hiện tại để quay lại khi cần."],
+    ["Giải nén <code>TraDa62_full.zip</code>", "Được thư mục <code>tra-da-pho-co</code> đầy đủ: <code>server.js</code>, <code>package.json</code>, <code>admin/</code>, <code>public/</code>, <code>tools/</code>."],
+    ["Điền địa chỉ máy chủ vào <code>public/js/config.js</code>", "Dòng <code>server: \"wss://&lt;tên-service&gt;.onrender.com/ws\"</code>. Đây là file duy nhất cần sửa. Đổi <code>og:image</code> trong <code>public/index.html</code> nếu tên miền game không phải <code>hungq.sg-host.com</code>."],
+    ["Đếm đủ file", "<code>public/models/</code>: 14 file <code>.glb</code>. <code>public/sound/</code>: 14 file <code>.mp3</code>. <code>public/js/</code>: 16 file <code>.js</code> và thư mục <code>vendor/</code> có 3 file <code>.js</code>."]]],
+  ["B. Upstash (lưu dữ liệu lâu dài)", [
+    ["Tạo database Redis", "upstash.com › Create Database › Redis, tên <code>tra-da</code>, vùng <code>ap-southeast-1</code> (Singapore), gói Free."],
+    ["Chép 2 giá trị REST API", "<code>UPSTASH_REDIS_REST_URL</code> và <code>UPSTASH_REDIS_REST_TOKEN</code>. Không gửi token qua chat hay email."]]],
+  ["C. Render (máy chủ)", [
+    ["Thêm 3 biến môi trường", "Environment: <code>UPSTASH_REDIS_REST_URL</code>, <code>UPSTASH_REDIS_REST_TOKEN</code>, <code>ADMIN_KEY</code> (ít nhất 16 ký tự, lưu vào trình quản lý mật khẩu). Giữ nguyên <code>ALLOWED_ORIGIN</code>."],
+    ["Đưa code lên GitHub", "Kéo <b>toàn bộ nội dung</b> thư mục <code>tra-da-pho-co</code> vào trang Upload files của repo. Trang đầu repo phải thấy <code>server.js</code> ở gốc. Commit ghi <code>Bản 6.2 đầy đủ</code>."],
+    ["Xem Logs sau khi triển khai", "Phải có dòng <code>lưu dữ liệu: Upstash Redis</code> và <b>không</b> có <code>CHƯA đặt ADMIN_KEY</code>."],
+    ["Mở <code>/health</code>", "Kết quả có <code>\"ok\":true</code> và <code>\"store\":\"upstash\"</code>."],
+    ["Mở <code>/admin</code> và đăng nhập", "Đăng nhập bằng <code>ADMIN_KEY</code>. Không có khung cảnh báo màu vàng về lưu trữ."]]],
+  ["D. SiteGround (trang game)", [
+    ["Tải <b>toàn bộ nội dung</b> thư mục <code>public/</code> lên chỗ đặt game", "Chọn Ghi đè (Overwrite) khi được hỏi. Không xoá các file khác của website như trang sách, trang giới thiệu."],
+    ["Mở thử 2 file trực tiếp", "<code>…/models/nguoi.glb</code> tải về được (không báo 404); <code>…/sound/rao_banhmi.mp3</code> phát được trong trình duyệt."],
+    ["Xoá bộ nhớ đệm", "Site Tools › Speed › Caching › Flush Cache. Đóng hết tab game rồi mở lại. Vẫn thấy bản cũ: F12 › Application › Service Workers › Unregister, tải lại trang."]]],
+  ["E. Kiểm thử trên máy tính", [
+    ["Màn hình chờ nạp đủ mô hình", "Hiện “nạp mô hình …/14” rồi vào màn hình đặt tên."],
+    ["Console không báo lỗi nạp", "F12 › Console: không có dòng <code>Không nạp được …</code>."],
+    ["Nhân vật mới", "Khách quanh quán có mặt, tay chân, cầm cốc. Bấm Nhấp trà: nhân vật đưa cốc lên miệng. Cô bán hàng nghiêng ấm khi rót."],
+    ["Xe mới", "Thấy xích lô (có người đạp phía sau) và xe đạp chở hoa đi qua."],
+    ["Hướng dẫn chơi", "Lần đầu vào phố, khung “Hướng dẫn · bước 1/5” hiện ở dưới và tự sang bước khi làm xong. ☰ có 🎓 Hướng dẫn nhanh và 📜 Nội quy quán."],
+    ["Trang kiểm thử giọng", "Mở <code>…/kiemthu.html</code>, thẻ Kiểm thử giọng rao › Kiểm tra tất cả file: 14/14 nạp được."],
+    ["Giọng trong game", "Người gánh hàng đi ngang: nghe tiếng rao đúng câu trên bong bóng chữ. Quán từ 10 khách: loa phường đọc thông báo có tiếng vang. Đi xuống lòng đường quá 5 giây: dân phòng nhắc."]]],
+  ["F. Kiểm thử cộng đồng (2 thiết bị)", [
+    ["Hai máy vào cùng quán", "Cả hai bấm “Ngồi cùng người thật”, góc trên hiện cùng số quán."],
+    ["Báo cáo", "Máy A chạm người của máy B (có dấu ●) › 🚩 Báo cáo › chọn lý do. Máy A thấy “Đã gửi báo cáo”."],
+    ["Xử lý trong <code>/admin</code>", "Báo cáo hiện trong bảng. Bấm Ẩn tên: máy B nhận thông báo, tên chuyển về tên ngẫu nhiên."],
+    ["Thông báo chung", "Gửi một câu từ <code>/admin</code>: cả hai máy thấy khung xanh “Thông báo từ quán”."],
+    ["Chặn từ", "Chặn thử một từ, đổi tên chứa từ đó thì bị từ chối. Sau đó bỏ chặn."],
+    ["Dữ liệu còn sau khi khởi động lại", "Viết một dòng lưu bút, rồi trên Render bấm Manual Deploy › Restart service. Lưu bút, báo cáo và thống kê vẫn còn."]]],
+  ["G. Kiểm thử trên điện thoại", [
+    ["Android (Chrome)", "Vào được phố, hướng dẫn không che nút, có tiếng sau khi chạm màn hình lần đầu, ☰ › Đồ hoạ hiện từ 30 khung/giây trở lên."],
+    ["iPhone (Safari)", "Như trên. <b>Gạt tắt công tắc im lặng</b> bên hông máy: khi bật im lặng, iPhone tắt tiếng của game trên web."],
+    ["Ghi lại số khung/giây", "Ghi tên máy, mức đồ hoạ tự chọn, số khung/giây ở quán trà và ở Hồ Gươm."]]],
+  ["H. Sau khi phát hành", [
+    ["Theo dõi 24 giờ đầu", "Vào <code>/admin</code> xem số lỗi, báo cáo, nhật ký máy chủ."],
+    ["Lưu bản chuẩn", "Bản 6.2 đã ghép nằm trên GitHub là bản gốc duy nhất."],
+    ["Biết cách quay lại", "Render › Events › Rollback; SiteGround: giải nén <code>backup-6.1.zip</code> đè lên <code>public_html</code>. Hai nơi phải cùng phiên bản."]]]
+];
+let ck = store.get("tdpc_ck62", {});
+function renderCk() {
+  const L = $("ckList"); L.textContent = ""; let n = 0, d = 0;
+  CK.forEach(([g, items], gi) => {
+    const box = document.createElement("div"); box.className = "grp"; const h = document.createElement("h3"); const gd = items.filter((_, i) => ck[gi + "." + i]).length;
+    h.innerHTML = `<span></span><small>${gd}/${items.length}</small>`; h.firstChild.textContent = g; box.append(h);
+    items.forEach(([t, hint], i) => { const id = gi + "." + i; n++; if (ck[id]) d++;
+      const row = document.createElement("div"); row.className = "ck" + (ck[id] ? " done" : "");
+      row.innerHTML = `<input type="checkbox" id="c${gi}_${i}"${ck[id] ? " checked" : ""}><label for="c${gi}_${i}"><span>${t}</span><span class="hint">${hint}</span></label>`;
+      row.querySelector("input").addEventListener("change", e => { if (e.target.checked) ck[id] = new Date().toISOString().slice(0, 16).replace("T", " "); else delete ck[id]; store.set("tdpc_ck62", ck); renderCk(); });
+      box.append(row); });
+    L.append(box); });
+  $("ckBar").style.width = (d / n * 100) + "%"; $("ckPct").textContent = d + "/" + n; $("ckMsg").textContent = d === n ? "Đã xong tất cả. Bản 6.2 sẵn sàng." : "";
+}
+const strip = h => { const t = document.createElement("div"); t.innerHTML = h; return t.textContent; };
+$("ckCopy").onclick = () => { let s = "Trà Đá Phố Cổ 6.2 — báo cáo triển khai (" + new Date().toLocaleString("vi-VN") + ")\n";
+  CK.forEach(([g, items], gi) => { s += "\n" + g + "\n"; items.forEach(([t], i) => { const v = ck[gi + "." + i]; s += (v ? "[x] " : "[ ] ") + strip(t) + (v ? "  (" + v + ")" : "") + "\n"; }); });
+  copy(s, $("ckMsg")); };
+$("ckPrint").onclick = () => print();
+$("ckReset").onclick = () => { if (confirm("Xoá mọi đánh dấu trong checklist?")) { ck = {}; store.set("tdpc_ck62", ck); renderCk(); } };
+function copy(s, el) { (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => el.textContent = "Đã sao chép.", () => { $("out").value = s; el.textContent = "Không sao chép tự động được, nội dung đã đưa vào ô bên dưới."; }); }
+renderCk();
+
+/* tabs */
+const tabs = [["tb1", "tabCheck"], ["tb2", "tabVoice"]];
+tabs.forEach(([b, p]) => $(b).addEventListener("click", () => tabs.forEach(([b2, p2]) => { $(b2).setAttribute("aria-selected", b2 === b); $(p2).hidden = b2 !== b; })));
+
+/* ================= KIỂM THỬ GIỌNG ================= */
+const V = [
+  ["rao_banhmi", "Tiếng rao", "Bánh mì nóng giòn đây…", 6, "rao"], ["rao_banhmi2", "Tiếng rao", "Ai bánh mì nóng giòn đây…", 6, "rao"],
+  ["rao_xoi", "Tiếng rao", "Xôi lạc, xôi ngô nóng đây…", 6, "rao"], ["rao_hoa", "Tiếng rao", "Hoa tươi đây… Ai mua hoa không?", 6, "rao"],
+  ["rao_qua", "Tiếng rao", "Cam ngọt, quýt ngọt đây…", 6, "rao"], ["rao_ngo", "Tiếng rao", "Ngô nướng, khoai nướng đây…", 6, "rao"],
+  ["loa_phuong", "Loa phường", "Thông báo, thông báo. Đề nghị bà con kê ghế gọn vào phía trong, chừa lối đi cho người đi bộ, không lấn chiếm lòng đường. Xin cảm ơn bà con.", 14, "loa"],
+  ["dp_camon", "Dân phòng", "Cảm ơn bà con đã hợp tác.", 4, "noi"], ["dp_viahe", "Dân phòng", "Bạn ơi, đi lên vỉa hè cho an toàn nhé.", 5, "noi"],
+  ["co_moi", "Cô bán hàng", "Trà đá đây cháu ơi.", 4, "noi"], ["co_moi2", "Cô bán hàng", "Có hướng dương, kẹo lạc đây.", 4, "noi"], ["co_ngoi", "Cô bán hàng", "Cứ ngồi đi cháu.", 4, "noi"],
+  ["xi_xao", "Âm nền", "Tiếng khách xì xào trong quán (vòng lặp 24 giây, không cần nghe rõ chữ)", 30, "loop"],
+  ["may_xe", "Âm nền", "Tiếng máy xe số chạy chậm (vòng lặp 2 giây)", 3, "loop"]];
+const TIP = { rao: "Chữ cuối kéo dài, vút lên như gọi từ xa.", loa: "Rõ từng chữ dù có tiếng rè loa.", noi: "Nói tự nhiên, đúng dấu.", loop: "Vòng lặp liền mạch, không nghe thấy chỗ nối." };
+const isFile = location.protocol === "file:"; if (isFile) $("fileWarn").hidden = false;
+let ctx = null, master = null; const BUF = {}, USER = {}, QA = {};
+let res = store.get("tdpc_voice62", {});
+function ac() { if (!ctx) { ctx = new (window.AudioContext || window.webkitAudioContext)(); master = ctx.createGain(); master.gain.value = $("vol").value / 100; master.connect(ctx.destination); } if (ctx.state === "suspended") ctx.resume(); return ctx; }
+$("vol").addEventListener("input", e => { if (master) master.gain.value = e.target.value / 100; });
+
+function analyze(b, maxDur) {
+  const d = b.getChannelData(0), n = d.length, sr = b.sampleRate; let pk = 0, sq = 0, clip = 0;
+  for (let i = 0; i < n; i++) { const a = Math.abs(d[i]); if (a > pk) pk = a; sq += a * a; if (a >= .995) clip++; }
+  const th = Math.max(.02, pk * .05); let a0 = 0, a1 = n - 1; while (a0 < n && Math.abs(d[a0]) < th) a0++; while (a1 > 0 && Math.abs(d[a1]) < th) a1--;
+  const db = v => v > 0 ? 20 * Math.log10(v) : -99, r = { dur: b.duration, peak: db(pk), rms: db(Math.sqrt(sq / n)), clip: clip / n * 100, lead: a0 / sr, tail: (n - 1 - a1) / sr, sr, ch: b.numberOfChannels };
+  const chk = [];
+  chk.push(["Độ dài " + r.dur.toFixed(1) + " giây", r.dur <= maxDur ? "ok" : "warn"]);
+  chk.push(["Đỉnh " + r.peak.toFixed(1) + " dB", r.peak > -0.3 ? "warn" : r.peak < -14 ? "warn" : "ok"]);
+  chk.push(["Rè " + r.clip.toFixed(2) + "%", r.clip > .5 ? "bad" : r.clip > .05 ? "warn" : "ok"]);
+  chk.push(["Lặng đầu " + r.lead.toFixed(2) + " giây", r.lead > .4 ? "warn" : "ok"]);
+  chk.push(["Lặng cuối " + r.tail.toFixed(2) + " giây", r.tail > .8 ? "warn" : "ok"]);
+  r.chk = chk; r.level = chk.some(c => c[1] === "bad") ? "bad" : chk.some(c => c[1] === "warn") ? "warn" : "ok"; return r;
+}
+async function loadOne(name) {
+  if (isFile) throw new Error("Mở qua web để phân tích");
+  const r = await fetch("sound/" + name + ".mp3?t=" + Date.now(), { cache: "no-store" });
+  if (!r.ok) throw new Error("HTTP " + r.status + (r.status === 404 ? " (chưa tải file lên)" : ""));
+  const type = r.headers.get("content-type") || "", ab = await r.arrayBuffer(), size = ab.byteLength;
+  if (size < 1000) throw new Error("File quá nhỏ (" + size + " byte)");
+  const b = await ac().decodeAudioData(ab); BUF[name] = b; return { b, size, type };
+}
+function megaChain(dest) {
+  const c = ctx, hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 420;
+  const pk = c.createBiquadFilter(); pk.type = "peaking"; pk.frequency.value = 1800; pk.Q.value = 1.2; pk.gain.value = 9;
+  const ws = c.createWaveShaper(), cv = new Float32Array(512); for (let i = 0; i < 512; i++) cv[i] = Math.tanh((i / 256 - 1) * 4) * .8; ws.curve = cv;
+  const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 3600;
+  const dl = c.createDelay(.5); dl.delayTime.value = .19; const fb = c.createGain(); fb.gain.value = .22;
+  hp.connect(pk); pk.connect(ws); ws.connect(lp); lp.connect(dest); lp.connect(dl); dl.connect(fb); fb.connect(dl); fb.connect(dest); return hp;
+}
+let playing = null;
+function stop() { if (playing) { try { playing.s.stop(); } catch (e) { } if (playing.raf) cancelAnimationFrame(playing.raf); playing = null; } }
+function play(name, opt) {
+  opt = opt || {}; stop(); const c = ac(), b = opt.user ? USER[name] : BUF[name]; if (!b) return;
+  const s = c.createBufferSource(); s.buffer = b; if (opt.loop) s.loop = true;
+  const game = $("mode").value === "game", kind = V.find(v => v[0] === name)[4]; let dest = master;
+  if (game || opt.walk) { const pn = c.createPanner(); pn.panningModel = "HRTF"; pn.distanceModel = "inverse"; pn.refDistance = 3; pn.rolloffFactor = 1.05;
+    const set = (x, z) => { if (pn.positionX) { pn.positionX.value = x; pn.positionY.value = 0; pn.positionZ.value = z; } else pn.setPosition(x, 0, z); };
+    set(kind === "rao" ? 2.5 : 0, kind === "rao" ? -2 : -3); pn.connect(master); dest = pn;
+    if (opt.walk) { const dur = b.duration + 2.5, t0 = c.currentTime; const step = () => { const k = (c.currentTime - t0) / dur; set(-10 + 20 * k, -2.2); if (k < 1 && playing && playing.s === s) playing.raf = requestAnimationFrame(step); }; requestAnimationFrame(step); } }
+  const g = c.createGain(); g.gain.value = 1;
+  if (game && kind === "loa") { g.connect(megaChain(dest)); } else g.connect(dest);
+  s.connect(g); s.start(c.currentTime + (opt.walk ? 1 : 0)); playing = { s }; s.onended = () => { if (playing && playing.s === s) playing = null; };
+}
+function badge(el, cls, t) { el.className = "badge " + cls; el.textContent = t; }
+function renderCards() {
+  const C = $("cards"); C.textContent = "";
+  V.forEach(([name, grp, say, maxDur, kind]) => {
+    const card = document.createElement("div"); card.className = "card"; card.id = "card_" + name;
+    card.innerHTML = `<h4><span>${grp} <code>${name}.mp3</code></span><span class="badge" data-b>Chưa kiểm tra</span></h4>
+      <div class="say"></div><div class="muted">${TIP[kind]}</div><div class="qa" data-qa></div>
+      <div class="row"><button class="btn red" type="button" data-p>▶ Nghe</button>${kind === "rao" ? '<button class="btn" type="button" data-w>🚶 Người rao đi ngang</button>' : ""}${kind === "loop" ? '<button class="btn" type="button" data-l>🔁 Nghe lặp</button>' : ""}<button class="btn" type="button" data-s>■</button></div>
+      ${kind === "loop" ? "" : `<div class="rate" role="group" aria-label="Chấm điểm"><button type="button" class="r1" data-r="1">✓ Rõ, chuẩn</button><button type="button" class="r2" data-r="2">⚠ Còn máy</button><button type="button" class="r3" data-r="3">✗ Sai chữ/dấu</button></div>`}
+      <textarea rows="1" placeholder="Ghi chú (ví dụ: “giòn” nghe như “dòn”, chữ “đây” chưa vút lên)" aria-label="Ghi chú ${name}"></textarea>
+      <div class="file"><label>Thử bản thu của bạn: <input type="file" accept="audio/*" data-u></label><div data-uq class="qa"></div></div>`;
+    card.querySelector(".say").textContent = say;
+    const st = res[name] || {}; const ta = card.querySelector("textarea"); ta.value = st.note || "";
+    ta.addEventListener("input", () => { (res[name] = res[name] || {}).note = ta.value; store.set("tdpc_voice62", res); });
+    card.querySelectorAll("[data-r]").forEach(b => { b.setAttribute("aria-pressed", String(st.r == b.dataset.r));
+      b.onclick = () => { (res[name] = res[name] || {}).r = +b.dataset.r; store.set("tdpc_voice62", res); card.querySelectorAll("[data-r]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); summary(); }; });
+    const ensure = async () => { if (BUF[name]) return true; try { await check(name); return !!BUF[name]; } catch (e) { return false; } };
+    card.querySelector("[data-p]").onclick = async () => { if (isFile) { stop(); new Audio("sound/" + name + ".mp3").play(); return; } if (await ensure()) play(name); };
+    const w = card.querySelector("[data-w]"); if (w) w.onclick = async () => { if (await ensure()) play(name, { walk: true }); };
+    const l = card.querySelector("[data-l]"); if (l) l.onclick = async () => { if (await ensure()) play(name, { loop: true }); };
+    card.querySelector("[data-s]").onclick = stop;
+    card.querySelector("[data-u]").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; const q = card.querySelector("[data-uq]");
+      try { const b = await ac().decodeAudioData(await f.arrayBuffer()); USER[name] = b; const a = analyze(b, maxDur);
+        q.innerHTML = ""; a.chk.forEach(([t, c]) => { const sp = document.createElement("span"); sp.className = c; sp.textContent = t; q.append(sp); });
+        const bt = document.createElement("button"); bt.className = "btn"; bt.type = "button"; bt.textContent = "▶ Nghe bản thu"; bt.onclick = () => play(name, { user: true, walk: kind === "rao" }); q.append(bt);
+        const nt = document.createElement("span"); nt.textContent = "Muốn dùng: đổi tên thành " + name + ".mp3 (định dạng mp3) rồi tải lên thư mục sound/."; nt.className = "muted"; q.append(nt);
+      } catch (x) { q.textContent = "Không đọc được file này: " + x.message; } });
+    C.append(card);
+  });
+}
+async function check(name) {
+  const card = $("card_" + name), bd = card.querySelector("[data-b]"), qa = card.querySelector("[data-qa]"), maxDur = V.find(v => v[0] === name)[3];
+  badge(bd, "", "Đang nạp…");
+  try { const { b, size, type } = await loadOne(name); const a = analyze(b, maxDur); a.size = size; QA[name] = a;
+    badge(bd, a.level, a.level === "ok" ? "Đạt" : a.level === "warn" ? "Cần xem" : "Lỗi");
+    qa.innerHTML = ""; a.chk.forEach(([t, c]) => { const s = document.createElement("span"); s.className = c; s.textContent = t; qa.append(s); });
+    const s2 = document.createElement("span"); s2.textContent = Math.round(size / 1024) + " KB" + (/audio|mpeg/.test(type) ? "" : " · máy chủ trả kiểu " + (type || "không rõ")); s2.className = /audio|mpeg/.test(type) ? "" : "warn"; qa.append(s2);
+  } catch (e) { QA[name] = { err: e.message }; badge(bd, "bad", "Lỗi"); qa.innerHTML = ""; const s = document.createElement("span"); s.className = "bad"; s.textContent = e.message; qa.append(s); throw e; }
+}
+$("runAll").onclick = async () => {
+  ac(); $("runAll").disabled = true; let ok = 0, warn = 0, bad = 0;
+  for (const [name] of V) { $("allMsg").textContent = "Đang kiểm tra " + name + "…"; try { await check(name); QA[name].level === "ok" ? ok++ : warn++; } catch (e) { bad++; } }
+  $("allMsg").textContent = `Xong: ${ok + warn}/${V.length} nạp được · ${ok} đạt · ${warn} cần xem · ${bad} lỗi.`; $("runAll").disabled = false; summary();
+};
+function summary() {
+  const rated = V.filter(v => v[4] !== "loop"), r = k => rated.filter(v => (res[v[0]] || {}).r === k).length, loaded = Object.values(QA).filter(q => !q.err).length;
+  $("sum").innerHTML = `<div>Nạp được<b>${loaded}/${V.length}</b></div><div>Rõ, chuẩn<b>${r(1)}</b></div><div>Còn máy<b>${r(2)}</b></div><div>Sai chữ/dấu<b>${r(3)}</b></div><div>Chưa chấm<b>${rated.length - r(1) - r(2) - r(3)}</b></div>`;
+}
+function script(all) {
+  const list = V.filter(v => v[4] !== "loop" && (all || [2, 3].includes((res[v[0]] || {}).r)));
+  if (!list.length) return "Chưa có câu nào chấm “Còn máy” hoặc “Sai”. Bấm “Tạo cho tất cả câu” nếu muốn thu âm lại toàn bộ.";
+  let s = "KỊCH BẢN THU ÂM — Trà Đá Phố Cổ\n\nCách thu:\n• Giọng Hà Nội (giọng Bắc). Đọc tự nhiên như ngoài phố, không đọc như đọc tin.\n• Thu bằng điện thoại trong phòng yên tĩnh, miệng cách máy 20–30 cm, không để quạt hay điều hoà kêu.\n• Mỗi câu đọc 3 lần, chọn lần hay nhất. Cắt bớt khoảng lặng đầu và cuối (dưới nửa giây).\n• Tiếng rao: kéo dài và vút lên chữ cuối (“đâyyy…”, “khôônggg?”), như gọi người ở cuối phố.\n• Loa phường: giọng nam, rõ ràng, đều, hơi trang trọng.\n• Gửi lại file mp3 (hoặc m4a), đặt tên đúng như dưới đây.\n\n";
+  list.forEach(([name, grp, say], i) => { const n = (res[name] || {}).note; s += `${i + 1}. ${name}.mp3 — ${grp}\n   Câu đọc: “${say.replace(/…(?=\s)/g, ".").replace(/…$/, "")}”\n${n ? "   Lưu ý: " + n + "\n" : ""}\n`; });
+  return s;
+}
+$("mkScript").onclick = () => { $("out").value = script(false); };
+$("mkAll").onclick = () => { $("out").value = script(true); };
+$("mkReport").onclick = () => { let s = "KẾT QUẢ KIỂM THỬ GIỌNG — Trà Đá Phố Cổ 6.2 (" + new Date().toLocaleString("vi-VN") + ")\nTrình duyệt: " + navigator.userAgent + "\n\n";
+  const RT = { 1: "Rõ, chuẩn", 2: "Còn máy", 3: "Sai chữ/dấu" };
+  V.forEach(([name]) => { const q = QA[name], r = res[name] || {}; s += name + ".mp3: " + (q ? (q.err ? "LỖI " + q.err : q.chk.map(c => c[0] + (c[1] !== "ok" ? " (!)" : "")).join(", ")) : "chưa kiểm tra") + " | chấm: " + (RT[r.r] || "—") + (r.note ? " | " + r.note : "") + "\n"; });
+  $("out").value = s; };
+$("cpOut").onclick = () => copy($("out").value, $("cpMsg"));
+renderCards(); summary();
+</script>
+</body>
+</html>
