@@ -3,7 +3,7 @@
    ============================================================
 
    server: địa chỉ máy chủ nhiều người chơi trên Render, dạng
-           "wss://tradaphoco.onrender.com/"
+           "wss://tradaphoco.onrender.com/ws"
            Lấy <tên-service> ở góc trên trang service trên Render (ví dụ https://tra-da-pho-co.onrender.com).
            Để trống "" thì:
              - mở game từ địa chỉ Render: vẫn chơi nhiều người bình thường;
