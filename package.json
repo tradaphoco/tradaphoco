@@ -1,9 +1,0 @@
-{
-  "name": "tra-da-pho-co",
-  "version": "5.1.0",
-  "description": "Trà Đá Phố Cổ 3D – quán trà đá vỉa hè phố cổ Hà Nội, nhiều người chơi",
-  "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" },
-  "license": "MIT"
-}
